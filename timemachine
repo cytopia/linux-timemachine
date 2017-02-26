@@ -1,0 +1,76 @@
+#!/bin/sh -eu
+#
+# https://serverfault.com/questions/834994/rsync-only-keep-10-backup-folders
+
+print_usage() {
+	echo "Usage: timemachine <source> <destination>"
+	echo
+	echo " <source>        Source directory"
+	echo " <destination>   Destination directory. Can also be a remote server"
+	echo
+	echo "This shell script mimics the behavior of OSX's timemachine."
+	echo "It uses rsync to incrementally backup your data to a different"
+	echo "directory or remote server."
+	echo
+	echo "Examples:"
+	echo "  $ timemachine /home/user /data"
+	echo "  $ timemachine /home/user user@host:/backup"
+	echo
+	echo "timemachine v0.1"
+}
+
+# Did someone request help?
+if [ "${#}" = "1" ]; then
+	if [ "${1}" = "-h" ] || [ "${1}" = "--help" ]; then
+		print_usage
+		exit 0
+	fi
+fi
+
+# Invalid input
+if [ "${#}" != "2" ]; then
+	echo "Error, invalid number of arguments."
+	print_usage
+	exit 1
+fi
+
+# Just checking the input dir
+if [ ! -d "${1}" ] && [ ! -f "${1}" ]; then
+	echo "Error, input directory does not exist."
+	print_usage
+	exit 1
+fi
+
+
+SRC="${1}"
+DEST="${2}"
+
+PREFIX="$( date '+%Y-%m-%d__%H_%M_%S' )"
+
+# Backup everything incrementally (relative to 'current').
+# If 'current' does not exist, do a full backup.
+rsync --archive \
+	--progress \
+	--compress \
+	--delete \
+	--delete-excluded \
+	--link-dest=../current \
+	--delay-updates \
+	--partial-dir=".partial-${PREFIX}" \
+	"${SRC}" "${DEST}/${PREFIX}"
+
+
+# Delete 'current' symlink by using an empty directory
+# and ignore everything starting with 0-9
+TMP="$( mktemp -q -d )"
+#rsync --archive --delete-before --exclude='[0-9]*' "${TMP}/" "${DEST}/"
+rsync --archive --delete-before --include='current' --exclude="*" "${TMP}/" "${DEST}/"
+
+# Create new 'current' symlink
+ln -s "${PREFIX}" "${TMP}/current"
+rsync --archive "${TMP}/current" "${DEST}/current"
+
+# Remove temp dirs/files
+rm "${TMP}/current"
+rmdir "${TMP}"
+
