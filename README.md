@@ -50,7 +50,21 @@ $ du -h .
 `rsync` is magic :-)
 
 
-## Examples:
+## Usage
+```
+$ timemachine -h
+Usage: timemachine <source> <destination>
+
+  <source>        Source directory
+  <destination>   Destination directory. Can also be a remote server
+
+  This shell script mimics the behavior of OSX's timemachine.
+  It uses rsync to incrementally backup your data to a different
+  directory or remote server.
+```
+
+
+## Examples
 
 Whether you want to backup locally or remotely is automatically be read from your destination folder:
 ```
