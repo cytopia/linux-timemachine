@@ -63,7 +63,6 @@ rsync --archive \
 # Delete 'current' symlink by using an empty directory
 # and ignore everything starting with 0-9
 TMP="$( mktemp -q -d )"
-#rsync --archive --delete-before --exclude='[0-9]*' "${TMP}/" "${DEST}/"
 rsync --archive --delete-before --include='current' --exclude="*" "${TMP}/" "${DEST}/"
 
 # Create new 'current' symlink
