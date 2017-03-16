@@ -45,7 +45,7 @@ fi
 SRC="${1}"
 DEST="${2}"
 
-PREFIX="$( date '+%Y-%m-%d__%H_%M_%S' )"
+PREFIX="$( date '+%Y-%m-%d__%H-%M-%S' )"
 
 # Backup everything incrementally (relative to 'current').
 # If 'current' does not exist, do a full backup.
