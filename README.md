@@ -19,19 +19,23 @@ $ timemachine /source/dir /target/dir -- --archive --progress
 
 # Make the timemachine script be more verbose
 $ timemachine -v /source/dir /target/dir
-$ timemachine -v /source/dir /target/dir -- --archive --progress
+$ timemachine --verbose /source/dir /target/dir
+
+# Make the timemachine script and rsync more verbose
+$ timemachine -v /source/dir /target/dir -- --verbose
+$ timemachine --verbose /source/dir /target/dir -- --verbose
 ```
 
 ## Backups
 
 The following directory structure will be created:
 ```
-$ ls -la /my/backup/folder
-2017-02-26__17_45_23/
-2017-02-26__17_45_38/
-2017-02-26__17_46_41/
-2017-02-26__17_46_54/
-current -> 2017-02-26__17_46_54/
+$ /bin/ls -lFgG /my/backup/folder
+drwxr-xr-x 3 4096 Jan  6 18:43 2018-01-06__18-43-30/
+drwxr-xr-x 3 4096 Jan  6 18:44 2018-01-06__18-44-23/
+drwxr-xr-x 3 4096 Jan  6 18:50 2018-01-06__18-50-44/
+drwxr-xr-x 3 4096 Jan  6 18:50 2018-01-06__18-50-52/
+lrwxrwxrwx 1   20 Jan  6 18:50 current -> 2018-01-06__18-50-52/
 ```
 
 `current` will always link to the latest created backup.
@@ -40,21 +44,21 @@ You can nevertheless safely remove all previous folders and the remaining folder
 
 Backups are done incrementally, so least space is consumed. Due to `rsync`'s ability, every folder will still contain all files, even though they are just incremental backups. This is archived via hardlinks.
 ```
-$ du -h .
-497M    ./2017-02-26__17_45_23
-24K     ./2017-02-26__17_45_38
-24K     ./2017-02-26__17_46_41
-24K     ./2017-02-26__17_46_54
+$ du -hd1 .
+497M    ./2018-01-06__18-43-30
+24K     ./2018-01-06__18-44-23
+24K     ./2018-01-06__18-50-44
+24K     ./2018-01-06__18-50-52
 497M    .
 ```
 
 You can also safely delete the full backup folder without having to worry to loose any of your full backup data:
 ```
-$ rm -rf ./2017-02-26__17_45_23
-$ du -h .
-497M    ./2017-02-26__17_45_38
-24K     ./2017-02-26__17_46_41
-24K     ./2017-02-26__17_46_54
+$ rm -rf ./2018-01-06__18-43-30
+$ du -hd1 .
+497M    ./2018-01-06__18-44-23
+24K     ./2018-01-06__18-50-44
+24K     ./2018-01-06__18-50-52
 497M    .
 ```
 
