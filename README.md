@@ -10,6 +10,8 @@ By default the only rsync option used is `--recursive`. This is due to the fact 
 
 ## TL;DR
 
+Using [POSIX.1-2008](http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html) argument syntax:
+
 ```shell
 # Recursive, incremental and atomic backup
 $ timemachine /source/dir /target/dir
@@ -117,3 +119,5 @@ Examples:
 ## License
 
 [MIT License](LICENSE.md)
+
+Copyright (c) 2017 [cytopia](https://github.com/cytopia)
