@@ -1,5 +1,9 @@
 # Linux TimeMachine (cli-only)
 
+**[TL;DR](#tldr)** | **[Backups](#backups)** | **[Failures](#failures)** | **[Usage](#usage)** | **[License](#license)**
+
+[![build status](https://travis-ci.org/cytopia/linux-timemachine.svg?branch=master)](https://travis-ci.org/cytopia/linux-timemachine)
+
 This shell script mimics the behavior of OSX's timemachine. It uses rsync to incrementally backup your data to a different directory. All operations are incremental, atomic and automatically resumable.
 
 By default the only rsync option used is `--recursive`. This is due to the fact that some remote NAS implementations do not support symlinks, changing owner, group or permissions (due to restrictive ACL's). If you want to use any of those options you can simply append them.
