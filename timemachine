@@ -2,74 +2,233 @@
 #
 # https://serverfault.com/questions/834994/rsync-only-keep-10-backup-folders
 
+################################################################################
+# Variables
+################################################################################
+
+# Credit variables
+MY_NAME="timemachine"
+MY_DESC="OSX-like timemachine cli script for Linux and BSD (and even OSX)"
+MY_PROJ="https://github.com/cytopia/linux-timemachine"
+MY_AUTH="cytopia"
+MY_MAIL="cytopia@everythingcli.org"
+MY_VERS="0.2"
+MY_DATE="2018-01-06"
+
+# cmd [-r] <src> <dst> [rsync opts]
+verbose=    # -v Verbose output
+
+
+
+################################################################################
+# Functions
+################################################################################
+
 print_usage() {
-	echo "Usage: timemachine <source> <destination>"
-	echo
-	echo " <source>        Source directory"
-	echo " <destination>   Destination directory. Can also be a remote server"
+	echo "Usage: ${MY_NAME} [-v] <source> <destination> -- [rsync opts]"
+	echo "       ${MY_NAME} -V"
+	echo "       ${MY_NAME} -h"
 	echo
 	echo "This shell script mimics the behavior of OSX's timemachine."
-	echo "It uses rsync to incrementally backup your data to a different"
-	echo "directory or remote server."
+	echo "It uses rsync to incrementally backup your data to a different directory."
+	echo "All operations are incremental, atomic and automatically resumable."
+	echo
+	echo "By default the only rsync option used is --recursive."
+	echo "This is due to the fact that some remote NAS implementations do not support"
+	echo "symlinks, changing owner, group or permissions (due to restrictive ACL's)."
+	echo "If you want to use any of those options you can simply append them."
+	echo "See Example section for how to."
+	echo
+	echo "Required arguments:"
+	echo "  <source>        Source directory"
+	echo "  <destination>   Destination directory. Can also be a remote server"
+	echo
+	echo "Options:"
+	echo "  -v, --verbose   Be verbose."
+	echo
+	echo "Misc Options:"
+	echo "  -V, --version   Print version information and exit"
+	echo "  -h, --help      Show this help screen"
 	echo
 	echo "Examples:"
-	echo "  $ timemachine /home/user /data"
-	echo "  $ timemachine /home/user user@host:/backup"
-	echo
-	echo "timemachine v0.1"
+	echo "  Simply backup one directory recursively"
+	echo "      timemachine /home/user /data"
+	echo "  Do the same, but be verbose"
+	echo "      timemachine -v /home/user /data"
+	echo "  Append rsync options and be verbose"
+	echo "      timemachine /home/user /data -- --links --times --perms --special"
+	echo "      timemachine --verbose /home/user /data -- --archive --progress --verbose"
+	echo "  Recommendation for cron run (no stdout, but stderr)"
+	echo "      timemachine /home/user /data -- -q"
+	echo "      timemachine /home/user -v /data -- --verbose > /var/log/timemachine.log"
 }
 
-# Did someone request help?
-if [ "${#}" = "1" ]; then
-	if [ "${1}" = "-h" ] || [ "${1}" = "--help" ]; then
-		print_usage
-		exit 0
+print_version() {
+	echo "${MY_NAME} v${MY_VERS} (${MY_DATE})"
+	echo "${MY_DESC}"
+	echo
+	echo "Copyright (c) 2017 ${MY_AUTH} <${MY_MAIL}>"
+	echo "${MY_PROJ}"
+}
+
+logmsg() {
+	# Only log to stdout when verbose is turned on
+	if [ "${verbose}" = "verbose" ]; then
+		echo "$(date +'%Y-%m-%d %H:%M:%S') ${MY_NAME}: [INFO]  ${*}"
 	fi
-fi
+}
 
-# Invalid input
-if [ "${#}" != "2" ]; then
-	echo "Error, invalid number of arguments."
-	print_usage
+logerr() {
+	echo "$(date +'%Y-%m-%d %H:%M:%S') ${MY_NAME}: [ERROR] ${*}" >&2
+}
+
+
+
+################################################################################
+# Entrypoint: Parse cmd args
+################################################################################
+
+# Parse input args with getopt
+if ! OPTS="$( getopt -o vhV --long verbose,version,help -n 'parse-options' -- "${@}" 2>/dev/null )"; then
+#if [ $? != 0 ]; then
+	logerr "Invalid cmd options. See -h for help."
 	exit 1
 fi
 
-# Just checking the input dir
+# Set everything not found by getopt as appendable OPTS for rsync arg injection
+eval set -- "${OPTS}"
+
+# Get options
+while [ ${#} -gt 0 ]; do
+	case "${1}" in
+		# ---- Help / version
+		-V | --version)
+			print_version
+			exit
+			;;
+		-h | --help)
+			print_usage
+			exit
+			;;
+		# ----- Options
+		-v | --verbose)
+			verbose="verbose"
+			shift
+			;;
+		# ---- Stop here
+		--) # End of all options
+			shift
+			break
+			;;
+		-*) # Unknown option
+			logerr "Error: Unknown option: ${1}"
+			exit 1
+			;;
+		*)  # No more options
+			break
+			;;
+	esac
+done
+
+
+################################################################################
+# Entrypoint: Validate cmd args
+################################################################################
+
+if [ "${#}" -lt "2" ]; then
+	logerr "<source> and <destination> are required. See -h for help."
+	exit 1
+fi
+
 if [ ! -d "${1}" ] && [ ! -f "${1}" ]; then
-	echo "Error, input directory does not exist."
-	print_usage
+	logerr "Source directory does not exist. See -h for help."
+	exit 1
+fi
+
+if [ ! -d "${2}" ] && [ ! -f "${2}" ]; then
+	logerr "Target directory does not exist. See -h for help."
+	exit 1
+fi
+
+if ! command -v rsync >/dev/null 2>&1; then
+	logerr "rsync binary not found but required."
 	exit 1
 fi
 
 
+
+################################################################################
+# Main Entrypoint
+################################################################################
+
+# Get arguments and remove them afterwards to have ${@} contain
+# all additional rsync options
 SRC="${1}"
 DEST="${2}"
+shift
+shift
 
-PREFIX="$( date '+%Y-%m-%d__%H-%M-%S' )"
+# Name of the backup directory
+BACKUP="$( date '+%Y-%m-%d__%H-%M-%S' )"
 
-# Backup everything incrementally (relative to 'current').
-# If 'current' does not exist, do a full backup.
-rsync --archive \
-	--progress \
-	--compress \
+# Name of the backup directory which is currently in progress (incomplete)
+# Used for atomic backups
+BACKUP_INPROGRESS=".inprogress"
+
+# Name of the symlink pointing to the latest successful backup
+BACKUP_LATEST="current"
+
+# Rsync partial directory to store partially transferred files
+# in order to speed up a possible resume for the next run
+RSYNC_PARTIAL=".partial"
+
+
+###
+### 1/3 Incremental, resumable and atomic rsync backup
+###
+
+# [incremental] --link-dest:          Used to hardlink files which are equal (instead of re-copying them)
+# [resume]      --partial-dir:        Where to store unfinished files for resume
+# [atomic]      ${BACKUP_INPROGRESS}: Tmp dest dir for atomic operations
+
+logmsg "Starting incremental backup"
+logmsg "\$ rsync ${*} ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
+
+rsync \
+	--recursive \
 	--delete \
 	--delete-excluded \
-	--link-dest=../current \
-	--delay-updates \
-	--partial-dir=".partial-${PREFIX}" \
-	"${SRC}" "${DEST}/${PREFIX}"
+	--partial-dir="${RSYNC_PARTIAL}" \
+	--link-dest="../${BACKUP_LATEST}" \
+	"${@}" \
+	"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
 
 
-# Delete 'current' symlink by using an empty directory
-# and ignore everything starting with 0-9
-TMP="$( mktemp -q -d )"
-rsync --archive --delete-before --include='current' --exclude="*" "${TMP}/" "${DEST}/"
+###
+### 2/3 Finish atomic operation
+###
 
-# Create new 'current' symlink
-ln -s "${PREFIX}" "${TMP}/current"
-rsync --archive "${TMP}/current" "${DEST}/current"
+# Move temporary atomic directory to chosen dest directory
+logmsg "\$ mv ${BACKUP_INPROGRESS} ${BACKUP}"
+mv "${DEST}/${BACKUP_INPROGRESS}" "${DEST}/${BACKUP}"
 
-# Remove temp dirs/files
-rm "${TMP}/current"
-rmdir "${TMP}"
 
+###
+### 3/3 Latest symlink
+###
+
+# Remove current 'latest' symlink
+if [ -L "${DEST}/${BACKUP_LATEST}" ]; then
+	logmsg "\$ rm ${BACKUP_LATEST}"
+	rm "${DEST}/${BACKUP_LATEST}"
+fi
+
+# Set new 'latest' link-dest for incremental backups
+logmsg "\$ ln -s ${BACKUP} ${BACKUP_LATEST}"
+ln -s "${BACKUP}" "${DEST}/${BACKUP_LATEST}"
+
+
+###
+### Finished
+###
+logmsg "Incremental backup finished"
