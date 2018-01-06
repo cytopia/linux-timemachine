@@ -1,15 +1,22 @@
 # Linux TimeMachine (cli-only)
 
+This shell script mimics the behavior of OSX's timemachine. It uses rsync to incrementally backup your data to a different directory. All operations are incremental, atomic and automatically resumable.
 
-It is basically an `rsync` script that mimics the behaviour of the famous OSX TimeMachine.
+By default the only rsync option used is `--recursive`. This is due to the fact that some remote NAS implementations do not support symlinks, changing owner, group or permissions (due to restrictive ACL's). If you want to use any of those options you can simply append them.
 
-However, there is no timemachine server required as its core is simply rsync. You can sync to:
+## TL;DR
 
-* local disk
-* external disk
-* remote server (rsync over ssh)
+```shell
+# Recursive, incremental and atomic backup
+$ timemachine /source/dir /target/dir
 
-Backups are done incrementally and if no full backup exists yet, it will be created and further backups are built upon. Again, no time machineserver is required.
+# Append rsync options
+$ timemachine /source/dir /target/dir -- --archive --progress
+
+# Make the timemachine script be more verbose
+$ timemachine -v /source/dir /target/dir
+$ timemachine -v /source/dir /target/dir -- --archive --progress
+```
 
 ## Backups
 
@@ -50,31 +57,55 @@ $ du -h .
 `rsync` is magic :-)
 
 
+## Failures
+
+In case the `timemachine` script aborts (self-triggered, disk unavailable or any other reason) you can simply run it again and it will automatically resume the last failed run.
+
+There will be a directory `.inprogress/` in your specified destination. This will hold all already transferred data and will be picked up during the next run.
+
+
 ## Usage
 ```
 $ timemachine -h
-Usage: timemachine <source> <destination>
 
+Usage: timemachine [-v] <source> <destination> -- [rsync opts]
+       timemachine -V
+       timemachine -h
+
+This shell script mimics the behavior of OSX's timemachine.
+It uses rsync to incrementally backup your data to a different directory.
+All operations are incremental, atomic and automatically resumable.
+
+By default the only rsync option used is --recursive.
+This is due to the fact that some remote NAS implementations do not support
+symlinks, changing owner, group or permissions (due to restrictive ACL's).
+If you want to use any of those options you can simply append them.
+See Example section for how to.
+
+Required arguments:
   <source>        Source directory
   <destination>   Destination directory. Can also be a remote server
 
-  This shell script mimics the behavior of OSX's timemachine.
-  It uses rsync to incrementally backup your data to a different
-  directory or remote server.
+Options:
+  -v, --verbose   Be verbose.
+
+Misc Options:
+  -V, --version   Print version information and exit
+  -h, --help      Show this help screen
+
+Examples:
+  Simply backup one directory recursively
+      timemachine /home/user /data
+  Do the same, but be verbose
+      timemachine -v /home/user /data
+  Append rsync options and be verbose
+      timemachine /home/user /data -- --links --times --perms --special
+      timemachine --verbose /home/user /data -- --archive --progress --verbose
+  Recommendation for cron run (no stdout, but stderr)
+      timemachine /home/user /data -- -q
+      timemachine /home/user -v /data -- --verbose > /var/log/timemachine.log
 ```
 
+## License
 
-## Examples
-
-Whether you want to backup locally or remotely is automatically be read from your destination folder:
-```
-$ timemachine /home/user /data
-$ timemachine /home/user user@host:/backup
-```
-
-When you work with remote backups over ssh on a non-standard port, see here [SSH CONFIG](https://www.everythingcli.org/ssh-tunnelling-for-fun-and-profit-ssh-config/) for how to properly set up your ssh configuration file.
-This will then allow you to simply use you aliases:
-```
-$ timemachine /home/user hosta:/backup
-```
-
+[MIT License](LICENSE.md)
