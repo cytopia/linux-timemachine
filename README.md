@@ -117,3 +117,5 @@ Examples:
 ## License
 
 [MIT License](LICENSE.md)
+
+Copyright (c) 2017 [cytopia](https://github.com/cytopia)
