@@ -1,12 +1,12 @@
 # Linux TimeMachine (cli-only)
 
-**[TL;DR](#tldr)** | **[Backups](#backups)** | **[Failures](#failures)** | **[Usage](#usage)** | **[License](#license)**
+**[TL;DR](#tldr)** | **[Features](#features)** | **[Backups](#backups)** | **[Failures](#failures)** | **[Usage](#usage)** | **[License](#license)**
 
 [![build status](https://travis-ci.org/cytopia/linux-timemachine.svg?branch=master)](https://travis-ci.org/cytopia/linux-timemachine)
 
-This shell script mimics the behavior of OSX's timemachine. It uses rsync to incrementally backup your data to a different directory. All operations are incremental, atomic and automatically resumable.
+This shell script mimics the behavior of OSX's timemachine. It uses [rsync](https://linux.die.net/man/1/rsync) to incrementally backup your data to a different directory or hard disk. All operations are incremental, atomic and automatically resumable.
 
-By default the only rsync option used is `--recursive`. This is due to the fact that some remote NAS implementations do not support symlinks, changing owner, group or permissions (due to restrictive ACL's). If you want to use any of those options you can simply append them.
+By default the only rsync option used is `--recursive`. This is due to the fact that some remote NAS implementations do not support symlinks, changing owner, group or permissions (due to restrictive ACL's). If you want to use any other rsync arguments, you can simply append them.
 
 ## TL;DR
 
@@ -17,6 +17,7 @@ Using [POSIX.1-2008](http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1
 $ timemachine /source/dir /target/dir
 
 # Append rsync options
+$ timemachine /source/dir /target/dir -- --links --times --perms --special
 $ timemachine /source/dir /target/dir -- --archive --progress
 
 # Make the timemachine script be more verbose
@@ -27,6 +28,25 @@ $ timemachine --verbose /source/dir /target/dir
 $ timemachine -v /source/dir /target/dir -- --verbose
 $ timemachine --verbose /source/dir /target/dir -- --verbose
 ```
+## Features
+
+#### Incremental
+
+Backups are always done incrementally using rsync's ability to hardlink to previous backup directories. You can nevertheless always see the full backup on the file system of any incrementally made backup without having to generate it. This will also be true when deleting any of the previously created backup directories. See the [Backups](#backups) section for how this is achieved via rsync.
+
+Incremental Backups also mean that only the changes on your source, compared to what is already on the target have to be backed up. This will safe you time as well as disk space on the target disk.
+
+#### Partial
+
+When backing up, files are transmitted partially so in case a 2GB movie file backup is interrupted, the next run will pick up exactly where it left off at that file and will not start to copy it from scratch.
+
+#### Resumable
+
+Not only is this script keeping partial files, but the whole backup run is also resumable. Whenever there is an unfinished backup and you start `timemachine` again, it will automatically resume it. It will resume any previously failed backup as long as it finally succeeds.
+
+#### Atomic
+
+The whole backup procedure is atomic. Only if and when the backup procedure succeeds, it is also properly named and symlinked. Any non-successful backup directory is either waiting to be resumed or to be deleted.
 
 ## Backups
 
