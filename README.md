@@ -17,7 +17,8 @@ Using [POSIX.1-2008](http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1
 $ timemachine /source/dir /target/dir
 
 # Append rsync options
-$ timemachine /source/dir /target/dir -- --links --times --perms --special
+$ timemachine /source/dir /target/dir -- --specials --progress
+$ timemachine /source/dir /target/dir -- --specials --links --times --perms
 $ timemachine /source/dir /target/dir -- --archive --progress
 
 # Make the timemachine script be more verbose
