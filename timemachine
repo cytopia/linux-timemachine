@@ -95,6 +95,7 @@ while getopts :vhV-: opt; do
 		[ -z "$opt" ] && break	# "--" terminates argument processing
 		opt=$OPTARG
 	fi
+	# shellcheck disable=SC2214
 	case $opt in
 		# ---- Help / version
 		V | version)
