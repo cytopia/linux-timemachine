@@ -92,8 +92,8 @@ logerr() {
 while getopts :vhV-: opt; do
 	# ----- long options
 	if [ "$opt" = "-" ]; then
-		[ -z "$opt" ] && break	# "--" terminates argument processing
 		opt=$OPTARG
+		[ -z "$opt" ] && break	# "--" terminates argument processing
 	fi
 	# shellcheck disable=SC2214
 	case $opt in
