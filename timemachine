@@ -156,7 +156,7 @@ fi
 SRC="${1}"
 DEST="${2}"
 shift 2
-[ "${1}" = "--" ] && shift
+[ "${#}" -ge 1 ] && [ "${1}" = "--" ] && shift
 
 # Name of the backup directory
 BACKUP="$( date '+%Y-%m-%d__%H-%M-%S' )"
@@ -182,7 +182,7 @@ RSYNC_PARTIAL=".partial"
 # [atomic]      ${BACKUP_INPROGRESS}: Tmp dest dir for atomic operations
 
 logmsg "Starting incremental backup"
-logmsg "\$ rsync ${*} ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
+logmsg "\$ rsync $* ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
 
 # Only link destination if it already exists
 if test -L "../${BACKUP_LATEST}"; then
@@ -192,7 +192,7 @@ if test -L "../${BACKUP_LATEST}"; then
 		--delete-excluded \
 		--partial-dir="${RSYNC_PARTIAL}" \
 		--link-dest="../${BACKUP_LATEST}" \
-		"${@}" \
+		"$@" \
 		"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
 else
 	rsync \
@@ -200,7 +200,7 @@ else
 		--delete \
 		--delete-excluded \
 		--partial-dir="${RSYNC_PARTIAL}" \
-		"${@}" \
+		"$@" \
 		"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
 fi
 
