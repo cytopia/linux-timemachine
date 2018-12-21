@@ -194,14 +194,25 @@ RSYNC_PARTIAL=".partial"
 logmsg "Starting incremental backup"
 logmsg "\$ rsync ${*} ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
 
-rsync \
-	--recursive \
-	--delete \
-	--delete-excluded \
-	--partial-dir="${RSYNC_PARTIAL}" \
-	--link-dest="../${BACKUP_LATEST}" \
-	"${@}" \
-	"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
+# Only link destination if it already exists
+if test -L "../${BACKUP_LATEST}"; then
+	rsync \
+		--recursive \
+		--delete \
+		--delete-excluded \
+		--partial-dir="${RSYNC_PARTIAL}" \
+		--link-dest="../${BACKUP_LATEST}" \
+		"${@}" \
+		"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
+else
+	rsync \
+		--recursive \
+		--delete \
+		--delete-excluded \
+		--partial-dir="${RSYNC_PARTIAL}" \
+		"${@}" \
+		"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
+fi
 
 
 ###

@@ -1,6 +1,9 @@
+SHELL := /bin/bash
+
 TEMP = temp
 SRC := $(TEMP)/source
 DST := $(TEMP)/dest
+
 
 # -------------------------------------------------------------------------------------------------
 # Default targets
@@ -28,7 +31,29 @@ lint:
 
 test:
 	@echo "# -------------------------------------------------------------------- #"
-	@echo "# 1. Testing timemachine without rsync arguments                       #"
+	@echo "# 1. Check for stderr errors/warnings                                  #"
+	@echo "# -------------------------------------------------------------------- #"
+	@echo
+	@$(MAKE) _populate
+	@if ! ./timemachine -v $(SRC) $(DST) 3>&1- 1>&2- 2>&3- | grep ""; then \
+		printf "[TEST] [OK]   No warnings detected for run without rsync arguments.\r\n"; \
+	else \
+		printf "[TEST] [FAIL] Warnings detected in stderr for run without rsync arguments.\r\n"; \
+		printf "%s\r\n" "$${STDERR}"; \
+		exit 1; \
+	fi
+	sleep 2
+	@if ! ./timemachine -v $(SRC) $(DST) 3>&1- 1>&2- 2>&3- | grep ""; then \
+		printf "[TEST] [OK]   No warnings detected for run without rsync arguments.\r\n"; \
+	else \
+		printf "[TEST] [FAIL] Warnings detected in stderr for run without rsync arguments.\r\n"; \
+		printf "%s\r\n" "$${STDERR}"; \
+		exit 1; \
+	fi
+
+
+	@echo "# -------------------------------------------------------------------- #"
+	@echo "# 2. Testing timemachine without rsync arguments                       #"
 	@echo "# -------------------------------------------------------------------- #"
 	@echo
 	@$(MAKE) _populate
@@ -84,7 +109,7 @@ test:
 
 
 	@echo "# -------------------------------------------------------------------- #"
-	@echo "# 2. Testing timemachine with rsync arguments                          #"
+	@echo "# 3. Testing timemachine with rsync arguments                          #"
 	@echo "# -------------------------------------------------------------------- #"
 	@echo
 	@$(MAKE) _populate
