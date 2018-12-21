@@ -100,7 +100,44 @@ test:
 		printf "[TEST] [FAIL] Symlink 'current' does not exists.\r\n"; \
 		exit 1; \
 	fi
+	@if test -d $(DST)/current/source; then \
+		printf "[TEST] [OK]   Source directory exists in target.\r\n"; \
+	else \
+		printf "[TEST] [FAIL] Source directory does not exist in target.\r\n"; \
+		exit 1; \
+	fi
+	@if test -f $(DST)/current/source/a; then \
+		printf "[TEST] [OK]   File 'a' exists after backup.\r\n"; \
+	else \
+		printf "[TEST] [FAIL] File 'a' does not exist after backup.\r\n"; \
+		exit 1; \
+	fi
+	@if test -f $(DST)/current/source/b; then \
+		printf "[TEST] [OK]   File 'b' exists after backup.\r\n"; \
+	else \
+		printf "[TEST] [FAIL] File 'b' does not exist after backup.\r\n"; \
+		exit 1; \
+	fi
+	@if test -f $(DST)/current/source/c; then \
+		printf "[TEST] [OK]   File 'c' exists after backup.\r\n"; \
+	else \
+		printf "[TEST] [FAIL] File 'c' does not exist after backup.\r\n"; \
+		exit 1; \
+	fi
+	@if ! test -w $(DST)/current/source/a; then \
+		printf "[TEST] [OK]   File 'a' only has read permissions as expected.\r\n"; \
+	else \
+		printf "[TEST] [FAIL] File 'a' has write permissions which should not have happened.\r\n"; \
+		exit 1; \
+	fi
+	@if test -x $(DST)/current/source/b; then \
+		printf "[TEST] [OK]   File 'b' has execute permissions as expected.\r\n"; \
+	else \
+		printf "[TEST] [FAIL] File 'b' does not have execute permissions.\r\n"; \
+		exit 1; \
+	fi
 	@echo
+
 
 clean:
 	@rm -rf $(TEMP)
