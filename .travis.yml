@@ -1,9 +1,21 @@
-language: sh
+language: bash
+
+os:
+  - linux
+  - osx
+
+install:
+  - if [ "${TRAVIS_OS_NAME}" = "linux" ]; then
+      until sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu/ trusty-backports restricted main universe"; do sleep 5; done
+      until sudo apt-get update -qq; do sleep 5; done
+      until sudo apt-get install -qq -y shellcheck; do sleep 5; done
+    else
+      until brew update; do sleep 5; done
+      until brew install shellcheck; do sleep 5; done
+    fi
 
 before_script:
-  - sudo add-apt-repository "deb http://archive.ubuntu.com/ubuntu/ trusty-backports restricted main universe"
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq shellcheck
+  - make lint
 
-script:
-  - shellcheck --shell=sh timemachine
+bscript:
+  - make test
