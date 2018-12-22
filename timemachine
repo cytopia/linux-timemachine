@@ -88,47 +88,37 @@ logerr() {
 # Entrypoint: Parse cmd args
 ################################################################################
 
-# Parse input args with getopt
-if ! OPTS="$( getopt -o vhV --long verbose,version,help -n 'parse-options' -- "${@}" 2>/dev/null )"; then
-#if [ $? != 0 ]; then
-	logerr "Invalid cmd options. See -h for help."
-	exit 1
-fi
-
-# Set everything not found by getopt as appendable OPTS for rsync arg injection
-eval set -- "${OPTS}"
-
-# Get options
-while [ ${#} -gt 0 ]; do
-	case "${1}" in
+# Parse input args with getopts
+while getopts :vhV-: opt; do
+	# ----- long options
+	if [ "$opt" = "-" ]; then
+		opt=$OPTARG
+		[ -z "$opt" ] && break	# "--" terminates argument processing
+	fi
+	# shellcheck disable=SC2214
+	case $opt in
 		# ---- Help / version
-		-V | --version)
+		V | version)
 			print_version
 			exit
 			;;
-		-h | --help)
+		h | help)
 			print_usage
 			exit
 			;;
 		# ----- Options
-		-v | --verbose)
+		v | verbose)
 			verbose="verbose"
-			shift
 			;;
-		# ---- Stop here
-		--) # End of all options
-			shift
-			break
+		\?)	logerr "Unknown option -$OPTARG, see -h for help."
+			exit 2
 			;;
-		-*) # Unknown option
-			logerr "Error: Unknown option: ${1}"
-			exit 1
-			;;
-		*)  # No more options
-			break
+		*)	logerr "Unknown option --$opt, see -h for help."
+			exit 2
 			;;
 	esac
 done
+shift $((OPTIND-1))		# remove parsed options and args from $@ list
 
 
 ################################################################################
@@ -165,8 +155,8 @@ fi
 # all additional rsync options
 SRC="${1}"
 DEST="${2}"
-shift
-shift
+shift 2
+[ "${#}" -ge 1 ] && [ "${1}" = "--" ] && shift
 
 # Name of the backup directory
 BACKUP="$( date '+%Y-%m-%d__%H-%M-%S' )"
@@ -192,7 +182,7 @@ RSYNC_PARTIAL=".partial"
 # [atomic]      ${BACKUP_INPROGRESS}: Tmp dest dir for atomic operations
 
 logmsg "Starting incremental backup"
-logmsg "\$ rsync ${*} ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
+logmsg "\$ rsync $* ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
 
 # Only link destination if it already exists
 if test -L "../${BACKUP_LATEST}"; then
@@ -202,7 +192,7 @@ if test -L "../${BACKUP_LATEST}"; then
 		--delete-excluded \
 		--partial-dir="${RSYNC_PARTIAL}" \
 		--link-dest="../${BACKUP_LATEST}" \
-		"${@}" \
+		"$@" \
 		"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
 else
 	rsync \
@@ -210,7 +200,7 @@ else
 		--delete \
 		--delete-excluded \
 		--partial-dir="${RSYNC_PARTIAL}" \
-		"${@}" \
+		"$@" \
 		"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
 fi
 
