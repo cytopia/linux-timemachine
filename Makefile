@@ -34,20 +34,18 @@ test:
 	@echo "# 1. Check for stderr errors/warnings                                  #"
 	@echo "# -------------------------------------------------------------------- #"
 	@echo
-	$(MAKE) _populate
-	if ! ./timemachine -v $(SRC) $(DST) 3>&1- 1>&2- 2>&3- | grep ""; then \
+	@$(MAKE) _populate
+	@if ! ./timemachine -v $(SRC) $(DST) 3>&1- 1>&2- 2>&3- | grep -E '.+'; then \
 		printf "[TEST] [OK]   No warnings detected for run without rsync arguments.\r\n"; \
 	else \
 		printf "[TEST] [FAIL] Warnings detected in stderr for run without rsync arguments.\r\n"; \
-		printf "%s\r\n" "$${STDERR}"; \
 		exit 1; \
 	fi
-	sleep 2
-	if ! ./timemachine -v $(SRC) $(DST) 3>&1- 1>&2- 2>&3- | grep ""; then \
+	@sleep 2
+	@if ! ./timemachine -v $(SRC) $(DST) 3>&1- 1>&2- 2>&3- | grep -E '.+'; then \
 		printf "[TEST] [OK]   No warnings detected for run without rsync arguments.\r\n"; \
 	else \
 		printf "[TEST] [FAIL] Warnings detected in stderr for run without rsync arguments.\r\n"; \
-		printf "%s\r\n" "$${STDERR}"; \
 		exit 1; \
 	fi
 
@@ -165,7 +163,7 @@ test:
 
 
 clean:
-	rm -rf $(TEMP)
+	@rm -rf $(TEMP)
 
 
 
@@ -173,10 +171,10 @@ clean:
 # Helper targets
 # -------------------------------------------------------------------------------------------------
 _populate: clean
-	mkdir -p "$(DST)"
-	mkdir -p "$(SRC)"
-	echo "a" > "$(SRC)/a"
-	echo "b" > "$(SRC)/b"
-	echo "c" > "$(SRC)/c"
-	chmod -w "$(SRC)/a"
-	chmod +x "$(SRC)/b"
+	@mkdir -p "$(DST)"
+	@mkdir -p "$(SRC)"
+	@echo "a" > "$(SRC)/a"
+	@echo "b" > "$(SRC)/b"
+	@echo "c" > "$(SRC)/c"
+	@chmod -w "$(SRC)/a"
+	@chmod +x "$(SRC)/b"
