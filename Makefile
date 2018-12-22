@@ -48,6 +48,7 @@ test:
 		printf "[TEST] [FAIL] Warnings detected in stderr for run without rsync arguments.\r\n"; \
 		exit 1; \
 	fi
+	@echo
 
 
 	@echo "# -------------------------------------------------------------------- #"
