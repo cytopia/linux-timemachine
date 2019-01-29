@@ -83,7 +83,7 @@ logerr() {
 }
 
 FirstUp() {
-	F=$(echo "${1}" | cut -c1 | tr a-z A-Z)
+	F=$(echo "${1}" | cut -c1 | tr '[:lower:]' '[:upper:]')
 	echo "${F}$(echo "${1}" | cut -c2-)"
 }
 
