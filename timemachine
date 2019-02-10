@@ -136,7 +136,7 @@ validate_args() {
 	if [ ! -d "${2}" ] && [ ! -f "${2}" ]; then
 		echo "Target directory does not exist."
 		echo "Would you like to create a new one?[y/n]: "
-		read response
+		read -r response
 		if [ "$response" != "${response#[Yy]}" ] ;then
 			mkdir "${2}"
 		else
