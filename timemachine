@@ -118,7 +118,6 @@ parse_args() {
 				;;
 		esac
 	done
-	shift $((OPTIND-1))		# remove parsed options and args from $@ list
 }
 
 
@@ -126,6 +125,7 @@ parse_args() {
 # Entrypoint: Validate cmd args
 ################################################################################
 validate_args() {
+	echo "${@}"
 	# Check arg count
 	[ "${#}" -lt "2" ] && logerr "<source> and <destination> are required. See -h for help." && exit 1
 
@@ -134,10 +134,10 @@ validate_args() {
 
 	# Target directory check
 	if [ ! -d "${2}" ] && [ ! -f "${2}" ]; then
-		echo "Target directory does not exist.\n"
-		read -r -p  "Would you like to create a new one?[y/n] " response
-		if [[ "${response}" =~ ^([yY][eE][sS]|[yY])+$ ]]
-		then
+		echo "Target directory does not exist."
+		echo "Would you like to create a new one?[y/n]: "
+		read response
+		if [ "$response" != "${response#[Yy]}" ] ;then
 			mkdir "${2}"
 		else
 			logerr "Target directory does not exist. See -h for help." && exit 1
@@ -156,6 +156,7 @@ validate_args() {
 # Main Entrypoint
 ################################################################################
 parse_args "${@}"
+shift $((OPTIND-1))		# remove parsed options and args from $@ list
 validate_args "${@}"
 # Get arguments and remove them afterwards to have ${@} contain
 # all additional rsync options
