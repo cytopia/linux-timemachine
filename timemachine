@@ -136,8 +136,16 @@ if [ ! -d "${1}" ] && [ ! -f "${1}" ]; then
 fi
 
 if [ ! -d "${2}" ] && [ ! -f "${2}" ]; then
-	logerr "Target directory does not exist. See -h for help."
-	exit 1
+	echo "Target directory does not exist.\n"
+	read -r -p  "Would you like to create a new one?[y/n] " response
+	if [[ "${response}" =~ ^([yY][eE][sS]|[yY])+$ ]]
+	then
+		mkdir "${2}"
+	else
+		logerr "Target directory does not exist. See -h for help."
+		echo "Quitting ..."
+		exit 1
+	fi
 fi
 
 if ! command -v rsync >/dev/null 2>&1; then
