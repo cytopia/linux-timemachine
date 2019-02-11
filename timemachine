@@ -21,7 +21,7 @@ verbose=   # -v Verbose output
 
 
 ################################################################################
-# Functions
+# Script Support Functions
 ################################################################################
 
 print_usage() {
@@ -85,7 +85,7 @@ logerr() {
 
 
 ################################################################################
-# Entrypoint: Parse cmd args
+# Parsing + Validation Functions
 ################################################################################
 parse_args() {
 	# Parse input args with getopts
@@ -125,7 +125,6 @@ parse_args() {
 # Entrypoint: Validate cmd args
 ################################################################################
 validate_args() {
-	echo "${@}"
 	# Check arg count
 	[ "${#}" -lt "2" ] && logerr "<source> and <destination> are required. See -h for help." && exit 1
 
@@ -151,13 +150,77 @@ validate_args() {
 }
 
 
+################################################################################
+# Main Backup Routine Functions
+################################################################################
+
+###
+### 1/3 Incremental, resumable and atomic rsync backup
+###
+
+# [incremental] --link-dest:          Used to hardlink files which are equal (instead of re-copying them)
+# [resume]      --partial-dir:        Where to store unfinished files for resume
+# [atomic]      ${BACKUP_INPROGRESS}: Tmp dest dir for atomic operations
+begin_backup() {
+	logmsg "Starting incremental backup"
+	logmsg "\$ rsync $* ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
+
+	# Only link destination if it already exists
+	if test -L "../${BACKUP_LATEST}"; then
+		rsync \
+			--recursive \
+			--delete \
+			--delete-excluded \
+			--partial-dir="${RSYNC_PARTIAL}" \
+			--link-dest="../${BACKUP_LATEST}" \
+			"$@" \
+			"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
+	else
+		rsync \
+			--recursive \
+			--delete \
+			--delete-excluded \
+			--partial-dir="${RSYNC_PARTIAL}" \
+			"$@" \
+			"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
+	fi
+}
+
+
+###
+### 2/3 Finish atomic operation
+###
+complete_atomic_op() {
+	# Move temporary atomic directory to chosen dest directory
+	logmsg "\$ mv ${BACKUP_INPROGRESS} ${BACKUP}"
+	mv "${DEST}/${BACKUP_INPROGRESS}" "${DEST}/${BACKUP}"
+}
+
+
+
+###
+### 3/3 Latest symlink
+###
+point_new_head() {
+	# Remove current 'latest' symlink
+	if [ -L "${DEST}/${BACKUP_LATEST}" ]; then
+		logmsg "\$ rm ${BACKUP_LATEST}"
+		rm "${DEST}/${BACKUP_LATEST}"
+	fi
+
+	# Set new 'latest' link-dest for incremental backups
+	logmsg "\$ ln -s ${BACKUP} ${BACKUP_LATEST}"
+	ln -s "${BACKUP}" "${DEST}/${BACKUP_LATEST}"
+}
 
 ################################################################################
 # Main Entrypoint
 ################################################################################
+
 parse_args "${@}"
 shift $((OPTIND-1))		# remove parsed options and args from $@ list
 validate_args "${@}"
+
 # Get arguments and remove them afterwards to have ${@} contain
 # all additional rsync options
 SRC="${1}"
@@ -179,62 +242,9 @@ BACKUP_LATEST="current"
 # in order to speed up a possible resume for the next run
 RSYNC_PARTIAL=".partial"
 
-
-###
-### 1/3 Incremental, resumable and atomic rsync backup
-###
-
-# [incremental] --link-dest:          Used to hardlink files which are equal (instead of re-copying them)
-# [resume]      --partial-dir:        Where to store unfinished files for resume
-# [atomic]      ${BACKUP_INPROGRESS}: Tmp dest dir for atomic operations
-
-logmsg "Starting incremental backup"
-logmsg "\$ rsync $* ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
-
-# Only link destination if it already exists
-if test -L "../${BACKUP_LATEST}"; then
-	rsync \
-		--recursive \
-		--delete \
-		--delete-excluded \
-		--partial-dir="${RSYNC_PARTIAL}" \
-		--link-dest="../${BACKUP_LATEST}" \
-		"$@" \
-		"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
-else
-	rsync \
-		--recursive \
-		--delete \
-		--delete-excluded \
-		--partial-dir="${RSYNC_PARTIAL}" \
-		"$@" \
-		"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
-fi
-
-
-###
-### 2/3 Finish atomic operation
-###
-
-# Move temporary atomic directory to chosen dest directory
-logmsg "\$ mv ${BACKUP_INPROGRESS} ${BACKUP}"
-mv "${DEST}/${BACKUP_INPROGRESS}" "${DEST}/${BACKUP}"
-
-
-###
-### 3/3 Latest symlink
-###
-
-# Remove current 'latest' symlink
-if [ -L "${DEST}/${BACKUP_LATEST}" ]; then
-	logmsg "\$ rm ${BACKUP_LATEST}"
-	rm "${DEST}/${BACKUP_LATEST}"
-fi
-
-# Set new 'latest' link-dest for incremental backups
-logmsg "\$ ln -s ${BACKUP} ${BACKUP_LATEST}"
-ln -s "${BACKUP}" "${DEST}/${BACKUP_LATEST}"
-
+begin_backup
+complete_atomic_op
+point_new_head
 
 ###
 ### Finished
