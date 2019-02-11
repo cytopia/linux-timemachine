@@ -242,7 +242,7 @@ BACKUP_LATEST="current"
 # in order to speed up a possible resume for the next run
 RSYNC_PARTIAL=".partial"
 
-begin_backup
+begin_backup "$@"
 complete_atomic_op
 point_new_head
 
