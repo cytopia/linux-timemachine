@@ -139,6 +139,20 @@ Examples:
       timemachine /home/user -v /data -- --verbose > /var/log/timemachine.log
 ```
 
+## Crontab
+
+The following can be used as an example crontab entry. It assumes you have an external disk (NFS, USB, etc..) that mounts at `/backup`. Before adding the crontab entry, ensure the filesystem in `/backup` is mounted and use:
+
+`$ touch /backup/mounted`
+
+This guards against accidentally backing up to an unmounted directory
+
+Next, add the following to crontab using `crontab -e` as whichever user you intend to run the backup script as. You may need to place this in the root crontab if you are backing up sensitive files that only root can read
+
+`0 2 * * * if [[ -e /backup/mounted ]]; then /opt/linux-timemachine/timemachine /home/someuser /backup; fi`
+
+This will cause `linux-timemachine` to run at 2AM once per day. Since `timemachine` keeps track of backups with granularity up to the hour, minute and second, you could have it run more than once per day if you want backups to run more often.
+
 ## License
 
 [MIT License](LICENSE.md)
