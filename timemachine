@@ -190,6 +190,10 @@ if test -L "../${BACKUP_LATEST}"; then
 		--recursive \
 		--delete \
 		--delete-excluded \
+		--times \
+		--perms \
+		--owner \
+		--group \
 		--partial-dir="${RSYNC_PARTIAL}" \
 		--link-dest="../${BACKUP_LATEST}" \
 		"$@" \
@@ -199,6 +203,10 @@ else
 		--recursive \
 		--delete \
 		--delete-excluded \
+		--times \
+		--perms \
+		--owner \
+		--group \
 		--partial-dir="${RSYNC_PARTIAL}" \
 		"$@" \
 		"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
