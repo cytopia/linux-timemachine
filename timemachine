@@ -194,6 +194,7 @@ if test -L "../${BACKUP_LATEST}"; then
 		--perms \
 		--owner \
 		--group \
+		--links \
 		--partial-dir="${RSYNC_PARTIAL}" \
 		--link-dest="../${BACKUP_LATEST}" \
 		"$@" \
@@ -207,6 +208,7 @@ else
 		--perms \
 		--owner \
 		--group \
+		--links \
 		--partial-dir="${RSYNC_PARTIAL}" \
 		"$@" \
 		"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
