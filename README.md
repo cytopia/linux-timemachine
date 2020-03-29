@@ -23,7 +23,7 @@ directory, hard disk or remote server via SSH. All operations are incremental, a
 By default it uses the rsync options: `--recursive`, `--perms`, `--owner`, `--group`, `--times` and `--links`.
 In case your target filesystem does not support any of those options or you cannot use them due
 to missing permission, you can explicitly disable them via `--no-perms`, `--no-owner`, `--no-group`, `--no-times`,  and `--copy-links`.
-See [Troubleshooting](#troubleshooting) for examples.
+See [Troubleshooting](#bulb-troubleshooting) for examples.
 
 
 ## :tada: Install
