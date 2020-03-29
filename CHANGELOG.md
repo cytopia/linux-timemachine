@@ -1,6 +1,12 @@
 # Changelog
 
 
+## Release v0.7
+
+#### Changed
+- [#21](https://github.com/cytopia/linux-timemachine/issues/21) No preservation of symlinks
+
+
 ## Release v0.6
 
 #### Fixed
