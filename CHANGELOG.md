@@ -5,6 +5,7 @@
 
 #### Added
 - [#9](https://github.com/cytopia/linux-timemachine/issues/9) Be able to backup to remote SSH host
+- Add debug option
 - Editorconfig
 
 

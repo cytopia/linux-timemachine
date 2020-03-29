@@ -41,6 +41,9 @@ $ timemachine /source/dir /target/dir
 # Recursive, incremental and atomic backup (via ssh)
 $ timemachine /source/dir user@host:target/dir
 
+# Recursive, incremental and atomic backup (via ssh with non-standard port)
+$ timemachine --port 10000 /source/dir user@host:target/dir
+
 # Append rsync options
 $ timemachine /source/dir /target/dir -- --specials --progress
 $ timemachine /source/dir /target/dir -- --specials --perms
@@ -131,9 +134,9 @@ There will be a directory `.inprogress/` in your specified destination. This wil
 ```
 $ timemachine -h
 
-Usage: timemachine [-v] <source> <dest> -- [rsync opts]
-       timemachine [-v] <source> <host>:<dest> -- [rsync opts]
-       timemachine [-v] <source> <user>@<host>:<dest> -- [rsync opts]
+Usage: timemachine [-vd] <source> <dest> -- [rsync opts]
+       timemachine [-vd] <source> <host>:<dest> -- [rsync opts]
+       timemachine [-vd] <source> <user>@<host>:<dest> -- [rsync opts]
        timemachine -V
        timemachine -h
 
@@ -152,7 +155,9 @@ Required arguments:
   <user>@<host>:<dest>  SSH user, SSH host and destination directory
 
 Options:
+  -p, --port            Specify alternative SSH port for remote backups if it is not 22.
   -v, --verbose         Be verbose.
+  -d, --debug           Be even more verbose.
 
 Misc Options:
   -V, --version         Print version information and exit

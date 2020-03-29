@@ -17,6 +17,7 @@ MY_DATE="2020-03-29"
 
 # cmd [-r] <src> <dst> [rsync opts]
 verbose=    # -v Verbose output
+port=22
 
 
 
@@ -25,9 +26,9 @@ verbose=    # -v Verbose output
 ################################################################################
 
 print_usage() {
-	echo "Usage: ${MY_NAME} [-v] <source> <dest> -- [rsync opts]"
-	echo "       ${MY_NAME} [-v] <source> <host>:<dest> -- [rsync opts]"
-	echo "       ${MY_NAME} [-v] <source> <user>@<host>:<dest> -- [rsync opts]"
+	echo "Usage: ${MY_NAME} [-vd] <source> <dest> -- [rsync opts]"
+	echo "       ${MY_NAME} [-vd] <source> <host>:<dest> -- [rsync opts]"
+	echo "       ${MY_NAME} [-vd] <source> <user>@<host>:<dest> -- [rsync opts]"
 	echo "       ${MY_NAME} -V"
 	echo "       ${MY_NAME} -h"
 	echo
@@ -47,7 +48,9 @@ print_usage() {
 
 	echo
 	echo "Options:"
+	echo "  -p, --port            Specify alternative SSH port for remote backups if it is not 22."
 	echo "  -v, --verbose         Be verbose."
+	echo "  -d, --debug           Be even more verbose."
 	echo
 	echo "Misc Options:"
 	echo "  -V, --version         Print version information and exit"
@@ -74,9 +77,16 @@ print_version() {
 	echo "${MY_PROJ}"
 }
 
+logdebug() {
+	# Only log to stdout when verbose is turned on
+	if [ "${verbose}" = "debug" ]; then
+		echo "$(date +'%Y-%m-%d %H:%M:%S') ${MY_NAME}: [DEBUG] ${*}"
+	fi
+}
+
 logmsg() {
 	# Only log to stdout when verbose is turned on
-	if [ "${verbose}" = "verbose" ]; then
+	if [ "${verbose}" = "verbose" ] || [ "${verbose}" = "debug" ]; then
 		echo "$(date +'%Y-%m-%d %H:%M:%S') ${MY_NAME}: [INFO]  ${*}"
 	fi
 }
@@ -104,11 +114,13 @@ dir_exists() {
 	if is_remote "${directory}"; then
 		ssh_part="$( echo "${directory}" | awk -F':' '{print $1}' )"
 		dir_part="$( echo "${directory}" | awk -F':' '{print $2}' )"
-		#echo "ssh ${ssh_part} test -d ${dir_part}"
-		ssh "${ssh_part}" test -d "${dir_part}" >/dev/null 2>&1
+		cmd="ssh -oStrictHostKeyChecking=no -oLogLevel=QUIET -q -p ${port} ${ssh_part} 'test -d \"${dir_part}\"'"
 	else
-		test -d "${directory}"
+		cmd="test -d '${directory}'"
 	fi
+
+	logdebug "${cmd}"
+	eval "${cmd}" >/dev/null
 }
 
 
@@ -121,11 +133,13 @@ link_exists() {
 	if is_remote "${directory}"; then
 		ssh_part="$( echo "${directory}" | awk -F':' '{print $1}' )"
 		dir_part="$( echo "${directory}" | awk -F':' '{print $2}' )"
-		#echo "ssh ${ssh_part} test -L ${dir_part}"
-		ssh "${ssh_part}" test -L "${dir_part}" >/dev/null 2>&1
+		cmd="ssh -oStrictHostKeyChecking=no -oLogLevel=QUIET -q -p ${port} ${ssh_part} 'test -L \"${dir_part}\"'"
 	else
-		test -L "${directory}"
+		cmd="test -L '${directory}'"
 	fi
+
+	logdebug "${cmd}"
+	eval "${cmd}" >/dev/null
 }
 
 
@@ -138,11 +152,13 @@ remove_file() {
 	if is_remote "${file}"; then
 		ssh_part="$( echo "${file}" | awk -F':' '{print $1}' )"
 		file_part="$( echo "${file}" | awk -F':' '{print $2}' )"
-		# shellcheck disable=SC2029
-		ssh "${ssh_part}" rm "${file_part}" >/dev/null 2>&1
+		cmd="ssh -oStrictHostKeyChecking=no -oLogLevel=QUIET -q -p ${port} ${ssh_part} 'rm \"${file_part}\"'"
 	else
-		rm "${file}"
+		cmd="rm '${file}'"
 	fi
+
+	logdebug "${cmd}"
+	eval "${cmd}" >/dev/null
 }
 
 
@@ -159,11 +175,13 @@ rename_directory() {
 		dir_from_part="$( echo "${from}" | awk -F':' '{print $2}' )"
 		dir_to_part="$( echo "${to}" | awk -F':' '{print $2}' )"
 
-		# shellcheck disable=SC2029
-		ssh "${ssh_part}" mv "${dir_from_part}" "${dir_to_part}" >/dev/null 2>&1
+		cmd="ssh -oStrictHostKeyChecking=no -oLogLevel=QUIET -q -p ${port} ${ssh_part} 'mv \"${dir_from_part}\" \"${dir_to_part}\"'"
 	else
-		mv "${from}" "${to}"
+		cmd="mv '${from}' '${to}'"
 	fi
+
+	logdebug "${cmd}"
+	eval "${cmd}" >/dev/null
 }
 
 
@@ -178,10 +196,13 @@ link_directory() {
 		ssh_part="$( echo "${lnk}" | awk -F':' '{print $1}' )"
 		lnk_part="$( echo "${lnk}" | awk -F':' '{print $2}' )"
 
-		ssh "${ssh_part}" ln -s "${dir}" "${lnk_part}" >/dev/null 2>&1
+		cmd="ssh -oStrictHostKeyChecking=no -oLogLevel=QUIET -q -p ${port} ${ssh_part} 'ln -s \"${dir}\" \"${lnk_part}\"'"
 	else
-		ln -s "${dir}" "${lnk}"
+		cmd="ln -s '${dir}' '${lnk}'"
 	fi
+
+	logdebug "${cmd}"
+	eval "${cmd}" >/dev/null
 }
 
 
@@ -191,7 +212,7 @@ link_directory() {
 ################################################################################
 
 # Parse input args with getopts
-while getopts :vhV-: opt; do
+while getopts :vdp:hV-: opt; do
 	# ----- long options
 	if [ "$opt" = "-" ]; then
 		opt=$OPTARG
@@ -209,8 +230,17 @@ while getopts :vhV-: opt; do
 			exit
 			;;
 		# ----- Options
+		p | port)
+			shift
+			port="${1}"
+			;;
 		v | verbose)
-			verbose="verbose"
+			if [ "${verbose}" != "debug" ]; then
+				verbose="verbose"
+			fi
+			;;
+		d | debug)
+			verbose="debug"
 			;;
 		\?)	logerr "Unknown option -$OPTARG, see -h for help."
 			exit 2
@@ -219,6 +249,7 @@ while getopts :vhV-: opt; do
 			exit 2
 			;;
 	esac
+	shift
 done
 shift $((OPTIND-1))		# remove parsed options and args from $@ list
 
@@ -233,12 +264,12 @@ if [ "${#}" -lt "2" ]; then
 fi
 
 if [ ! -d "${1}" ] && [ ! -f "${1}" ]; then
-	logerr "Source directory does not exist. See -h for help."
+	logerr "Source directory does not exist: '${1}'. See -h for help."
 	exit 1
 fi
 
 if ! dir_exists "${2}"; then
-	logerr "Target directory does not exist. See -h for help."
+	logerr "Target directory does not exist: '${2}'. See -h for help."
 	exit 1
 fi
 
@@ -292,6 +323,7 @@ if link_exists "${DEST}/${BACKUP_LATEST}"; then
 	logmsg "\$ rsync $* ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
 
 	rsync \
+		-e "ssh -oStrictHostKeyChecking=no -oLogLevel=QUIET -q -p ${port}" \
 		--recursive \
 		--perms \
 		--owner \
@@ -310,6 +342,7 @@ else
 	logmsg "\$ rsync $* ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
 
 	rsync \
+		-e "ssh -oStrictHostKeyChecking=no -oLogLevel=QUIET -q -p ${port}" \
 		--recursive \
 		--perms \
 		--owner \
