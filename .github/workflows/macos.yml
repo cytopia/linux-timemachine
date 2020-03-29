@@ -1,0 +1,70 @@
+---
+
+# -------------------------------------------------------------------------------------------------
+# Job Name
+# -------------------------------------------------------------------------------------------------
+name: MacOS
+
+
+# -------------------------------------------------------------------------------------------------
+# When to run
+# -------------------------------------------------------------------------------------------------
+on:
+  # Runs on Pull Requests
+  pull_request:
+
+  # Runs on master Branch and Tags
+  push:
+    branches:
+      - master
+    tags:
+      - '[0-9]+.[0-9]+*'
+
+
+# -------------------------------------------------------------------------------------------------
+# What to run
+# -------------------------------------------------------------------------------------------------
+jobs:
+  macos:
+
+    runs-on: macos-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - test
+
+    name: "[MacOS ${{ matrix.target }}]"
+    steps:
+
+      # ------------------------------------------------------------
+      # Checkout repository
+      # ------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v1
+
+      - name: Show environment
+        shell: bash
+        run: |
+          env
+
+      - name: Show bash versions
+        shell: bash
+        run: |
+          bash --version
+
+      - name: Show rsync versions
+        shell: bash
+        run: |
+          rsync --version
+
+      # ------------------------------------------------------------
+      # Test
+      # ------------------------------------------------------------
+      - name: test
+        shell: bash
+        run: |
+          make ${TARGET}
+        env:
+          TARGET: ${{ matrix.target }}

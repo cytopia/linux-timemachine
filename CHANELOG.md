@@ -5,3 +5,4 @@
 
 #### Added
 - Add GitHub Actions for Linux
+- Add GitHub Actions for MacOS
