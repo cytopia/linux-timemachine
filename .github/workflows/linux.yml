@@ -49,6 +49,11 @@ jobs:
         run: |
           env
 
+      - name: Show user
+        shell: bash
+        run: |
+          id
+
       - name: Show bash versions
         shell: bash
         run: |
@@ -60,9 +65,17 @@ jobs:
           rsync --version
 
       # ------------------------------------------------------------
+      # Install
+      # ------------------------------------------------------------
+      - name: Install
+        shell: bash
+        run: |
+          sudo make install
+
+      # ------------------------------------------------------------
       # Test
       # ------------------------------------------------------------
-      - name: test
+      - name: Test
         shell: bash
         run: |
           make ${TARGET}
