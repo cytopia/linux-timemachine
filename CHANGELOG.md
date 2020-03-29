@@ -1,6 +1,12 @@
 # Changelog
 
 
+## Release v0.5
+
+#### Fixed
+- Make incremental backups work
+
+
 ## Release v0.4
 
 #### Added
