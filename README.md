@@ -63,7 +63,7 @@ $ timemachine --verbose /source/dir /target/dir -- --verbose
 
 #### SSH or local
 
-local backups as well as backups via SSH are supported
+Local backups as well as backups via SSH are supported.
 
 #### Incremental
 
@@ -178,6 +178,11 @@ Examples:
 
 
 ## Troubleshooting
+
+### Non-standard SSH port
+```
+$ timemachine --port 1337 src/ user@host:path/to/backup
+```
 
 ### Disable preserving owner and group
 ```bash
