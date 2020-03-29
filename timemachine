@@ -12,7 +12,7 @@ MY_DESC="OSX-like timemachine cli script for Linux and BSD (and even OSX)"
 MY_PROJ="https://github.com/cytopia/linux-timemachine"
 MY_AUTH="cytopia"
 MY_MAIL="cytopia@everythingcli.org"
-MY_VERS="0.6"
+MY_VERS="0.7"
 MY_DATE="2020-03-29"
 
 # cmd [-r] <src> <dst> [rsync opts]
@@ -56,7 +56,7 @@ print_usage() {
 	echo "  Do the same, but be verbose"
 	echo "      timemachine -v /home/user /data"
 	echo "  Append rsync options and be verbose"
-	echo "      timemachine /home/user /data -- --links --times --perms --special"
+	echo "      timemachine /home/user /data -- --perms --special"
 	echo "      timemachine --verbose /home/user /data -- --archive --progress --verbose"
 	echo "  Recommendation for cron run (no stdout, but stderr)"
 	echo "      timemachine /home/user /data -- -q"
@@ -192,6 +192,7 @@ if test -L "${DEST}/${BACKUP_LATEST}"; then
 	rsync \
 		--recursive \
 		--times \
+		--links \
 		--delete \
 		--delete-excluded \
 		--times \
@@ -211,6 +212,7 @@ else
 	rsync \
 		--recursive \
 		--times \
+		--links \
 		--delete \
 		--delete-excluded \
 		--times \
