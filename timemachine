@@ -82,10 +82,6 @@ logerr() {
 	echo "$(date +'%Y-%m-%d %H:%M:%S') ${MY_NAME}: [ERROR] ${*}" >&2
 }
 
-FirstUp() {
-	F=$(echo "${1}" | cut -c1 | tr '[:lower:]' '[:upper:]')
-	echo "${F}$(echo "${1}" | cut -c2-)"
-}
 
 
 ################################################################################
@@ -242,4 +238,4 @@ ln -s "${BACKUP}" "${DEST}/${BACKUP_LATEST}"
 ###
 ### Finished
 ###
-logmsg "$(FirstUp ${BTYPE}) backup finished"
+logmsg "Finished ${BTYPE} backup"
