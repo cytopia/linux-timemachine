@@ -251,7 +251,7 @@ while getopts :vdp:hV-: opt; do
 	esac
 	shift
 done
-shift $((OPTIND-1))		# remove parsed options and args from $@ list
+
 
 
 ################################################################################
