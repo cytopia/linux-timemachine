@@ -6,6 +6,7 @@
 #### Fixed
 - [#30](https://github.com/cytopia/linux-timemachine/issues/30) Actually NOT incremental ?
 - [#28](https://github.com/cytopia/linux-timemachine/issues/28) Incremental issue
+- [#27](https://github.com/cytopia/linux-timemachine/issues/27) no hard links to old backups under busybox
 
 
 ## Release v0.5
