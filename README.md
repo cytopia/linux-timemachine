@@ -120,6 +120,9 @@ $ du -hd1 .
 497M    .
 ```
 
+`rsync` is magic :-)
+
+
 ### Failure handling
 
 In case the `timemachine` script aborts (self-triggered, disk unavailable or any other reason) you can simply run it again to automatically resume the last failed run.
@@ -203,27 +206,27 @@ This will cause `linux-timemachine` to run at 2AM once per day. Since `timemachi
 
 ## :bulb: Troubleshooting
 
-### Non-standard SSH port
+**Use non-standard SSH port**
 ```
 $ timemachine --port 1337 src/ user@host:path/to/backup
 ```
 
-### Disable preserving owner and group
+**Disable preserving owner and group**
 ```bash
 $ timemachine src/ dst/ -- --no-owner --no-group
 ```
 
-### Disable preserving permissions
+**Disable preserving permissions**
 ```bash
 $ timemachine src/ dst/ -- --no-owner --no-perms
 ```
 
-### Disable preserving time
+**Disable preserving time**
 ```bash
 $ timemachine src/ dst/ -- --no-owner --no-times
 ```
 
-### Target filesystem does not support symlinks
+**Target filesystem does not support symlinks**
 In case your target filesystem does not support symlinks, you can explicitly disable them and have
 them copied as files via:
 ```bash
