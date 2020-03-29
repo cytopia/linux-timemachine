@@ -1,8 +1,10 @@
 # Linux TimeMachine (cli-only)
 
-**[TL;DR](#tldr)** | **[Features](#features)** | **[Backups](#backups)** | **[Failures](#failures)** | **[Usage](#usage)** | **[License](#license)**
+**[Install](#install)** | **[Uninstall](#uninstall)** | **[TL;DR](#tldr)** | **[Features](#features)** | **[Backups](#backups)** | **[Failures](#failures)** | **[Usage](#usage)** | **[License](#license)**
 
-[![build status](https://travis-ci.org/cytopia/linux-timemachine.svg?branch=master)](https://travis-ci.org/cytopia/linux-timemachine)
+[![Linting](https://github.com/cytopia/linux-timemachine/workflows/Linting/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=Linting)
+[![Linux](https://github.com/cytopia/linux-timemachine/workflows/Linux/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=Linux)
+[![MacOS](https://github.com/cytopia/linux-timemachine/workflows/MacOS/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=MacOS)
 [![Tag](https://img.shields.io/github/tag/cytopia/linux-timemachine.svg)](https://github.com/cytopia/linux-timemachine/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
@@ -10,11 +12,24 @@ This shell script mimics the behavior of OSX's timemachine. It uses [rsync](http
 
 By default the only rsync option used is `--recursive`. This is because some remote NAS implementations do not support symlinks, changing owner, group or permissions (due to restrictive ACL's). If you want to use any other rsync arguments, you can simply append them.
 
+
+## Install
+```bash
+sudo make install
+```
+
+
+## Uninstall
+```bash
+sudo make uninstall
+```
+
+
 ## TL;DR
 
 Using [POSIX.1-2008](http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html) argument syntax:
 
-```shell
+```bash
 # Recursive, incremental and atomic backup
 $ timemachine /source/dir /target/dir
 
@@ -31,6 +46,8 @@ $ timemachine --verbose /source/dir /target/dir
 $ timemachine -v /source/dir /target/dir -- --verbose
 $ timemachine --verbose /source/dir /target/dir -- --verbose
 ```
+
+
 ## Features
 
 #### Incremental
@@ -51,10 +68,11 @@ Not only is this script keeping partial files, but also the whole backup run is 
 
 The whole backup procedure is atomic. Only if and when the backup procedure succeeds, it is then properly named and symlinked. Any non-successful backup directory is either waiting to be resumed or to be deleted.
 
+
 ## Backups
 
 The following directory structure will be created:
-```
+```bash
 $ /bin/ls -lFgG /my/backup/folder
 drwxr-xr-x 3 4096 Jan  6 18:43 2018-01-06__18-43-30/
 drwxr-xr-x 3 4096 Jan  6 18:44 2018-01-06__18-44-23/
@@ -68,7 +86,7 @@ All backups are incremental except the first created one.
 You can nevertheless safely remove all previous folders and the remaining folders will still have all of their content.
 
 Backups are done incrementally, so the least amount of space is consumed. Due to `rsync`'s ability, every folder will still contain all files, even though they are just incremental backups. This is archived via hardlinks.
-```
+```bash
 $ du -hd1 .
 497M    ./2018-01-06__18-43-30
 24K     ./2018-01-06__18-44-23
@@ -78,7 +96,7 @@ $ du -hd1 .
 ```
 
 You can also safely delete the full backup folder without having to worry about losing any of your full backup data:
-```
+```bash
 $ rm -rf ./2018-01-06__18-43-30
 $ du -hd1 .
 497M    ./2018-01-06__18-44-23
@@ -138,6 +156,7 @@ Examples:
       timemachine /home/user /data -- -q
       timemachine /home/user -v /data -- --verbose > /var/log/timemachine.log
 ```
+
 
 ## License
 
