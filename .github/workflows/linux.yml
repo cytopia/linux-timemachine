@@ -1,0 +1,93 @@
+---
+
+# -------------------------------------------------------------------------------------------------
+# Job Name
+# -------------------------------------------------------------------------------------------------
+name: Linux
+
+
+# -------------------------------------------------------------------------------------------------
+# When to run
+# -------------------------------------------------------------------------------------------------
+on:
+  # Runs on Pull Requests
+  pull_request:
+
+  # Runs on master Branch and Tags
+  push:
+    branches:
+      - master
+    tags:
+      - '[0-9]+.[0-9]+*'
+
+
+# -------------------------------------------------------------------------------------------------
+# What to run
+# -------------------------------------------------------------------------------------------------
+jobs:
+  linux:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - test
+
+    name: "[Linux ${{ matrix.target }}]"
+    steps:
+
+      # ------------------------------------------------------------
+      # Checkout repository
+      # ------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v1
+
+      - name: Show environment
+        shell: bash
+        run: |
+          env
+
+      - name: Show user
+        shell: bash
+        run: |
+          id
+
+      - name: Show bash versions
+        shell: bash
+        run: |
+          bash --version
+
+      - name: Show rsync versions
+        shell: bash
+        run: |
+          rsync --version
+
+      # ------------------------------------------------------------
+      # Install
+      # ------------------------------------------------------------
+      - name: Install
+        shell: bash
+        run: |
+          sudo make install
+          /usr/local/bin/timemachine --version
+
+      # ------------------------------------------------------------
+      # Test
+      # ------------------------------------------------------------
+      - name: Test
+        shell: bash
+        run: |
+          make ${TARGET}
+        env:
+          TARGET: ${{ matrix.target }}
+
+      # ------------------------------------------------------------
+      # Uninstall
+      # ------------------------------------------------------------
+      - name: Uninstall
+        shell: bash
+        run: |
+          sudo make uninstall
+          if test -f /usr/local/bin/timemachine >/dev/null 2>&1; then false; fi
