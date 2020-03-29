@@ -2,7 +2,8 @@
 
 **[TL;DR](#tldr)** | **[Features](#features)** | **[Backups](#backups)** | **[Failures](#failures)** | **[Usage](#usage)** | **[License](#license)**
 
-[![build status](https://travis-ci.org/cytopia/linux-timemachine.svg?branch=master)](https://travis-ci.org/cytopia/linux-timemachine)
+![Linux](https://github.com/cytopia/linux-timemachine/workflows/Linux/badge.svg)
+![MacOS](https://github.com/cytopia/linux-timemachine/workflows/MacOS/badge.svg)
 [![Tag](https://img.shields.io/github/tag/cytopia/linux-timemachine.svg)](https://github.com/cytopia/linux-timemachine/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 

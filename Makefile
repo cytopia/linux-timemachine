@@ -25,8 +25,7 @@ help:
 
 
 lint:
-	shellcheck --version
-	shellcheck --shell=sh timemachine
+	docker run --rm -v $(PWD):/mnt koalaman/shellcheck:stable --shell=sh timemachine
 
 
 test:
