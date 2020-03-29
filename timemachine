@@ -196,11 +196,6 @@ if test -L "${DEST}/${BACKUP_LATEST}"; then
 		--links \
 		--delete \
 		--delete-excluded \
-		--times \
-		--perms \
-		--owner \
-		--group \
-		--links \
 		--partial-dir="${RSYNC_PARTIAL}" \
 		--link-dest="${DEST}/${BACKUP_LATEST}" \
 		"$@" \
@@ -219,11 +214,6 @@ else
 		--links \
 		--delete \
 		--delete-excluded \
-		--times \
-		--perms \
-		--owner \
-		--group \
-		--links \
 		--partial-dir="${RSYNC_PARTIAL}" \
 		"$@" \
 		"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
