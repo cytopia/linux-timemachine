@@ -104,7 +104,7 @@ There will be a directory `.inprogress/` in your specified destination. This wil
 
 
 ## Usage
-```bash
+```
 $ timemachine -h
 
 Usage: timemachine [-v] <source> <destination> -- [rsync opts]
