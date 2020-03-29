@@ -1,6 +1,6 @@
 # Linux TimeMachine (cli-only)
 
-**[Install](#install)** | **[Uninstall](#uninstall)** | **[TL;DR](#tldr)** | **[Features](#features)** | **[Backups](#backups)** | **[Failures](#failures)** | **[Usage](#usage)** | **[Troubleshooting](#troubleshooting)** | **[License](#license)**
+**[Install](#install)** | **[Uninstall](#uninstall)** | **[TL;DR](#tldr)** | **[Features](#features)** | **[Backups](#backups)** | **[Failures](#failures)** | **[Usage](#usage)** | **[Crontab](#crontab)** | **[Troubleshooting](#troubleshooting)** | **[License](#license)**
 
 [![Linting](https://github.com/cytopia/linux-timemachine/workflows/Linting/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=Linting)
 [![Linux](https://github.com/cytopia/linux-timemachine/workflows/Linux/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=Linux)
@@ -179,6 +179,25 @@ Examples:
       timemachine /home/user /data -- -q
       timemachine /home/user -v /data -- --verbose > /var/log/timemachine.log
 ```
+
+
+## Crontab
+
+The following can be used as an example crontab entry. It assumes you have an external disk (NFS, USB, etc..) that mounts at `/backup`. Before adding the crontab entry, ensure the filesystem in `/backup` is mounted and use:
+
+```bash
+$ touch /backup/mounted
+```
+
+This guards against accidentally backing up to an unmounted directory
+
+Next, add the following to crontab using `crontab -e` as whichever user you intend to run the backup script as. You may need to place this in the root crontab if you are backing up sensitive files that only root can read
+
+```bash
+0 2 * * * if [[ -e /backup/mounted ]]; then /usr/local/bin/timemachine /home/someuser /backup; fi
+```
+
+This will cause `linux-timemachine` to run at 2AM once per day. Since `timemachine` keeps track of backups with granularity up to the hour, minute and second, you could have it run more than once per day if you want backups to run more often.
 
 
 ## Troubleshooting
