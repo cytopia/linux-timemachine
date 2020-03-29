@@ -1,15 +1,14 @@
 # Linux Time Machine
 
-**[Install](#install)** |
-**[Uninstall](#uninstall)** |
-**[TL;DR](#tldr)** |
-**[Features](#features)** |
-**[How does it work](#how-does-it-work)** |
-**[Retention](#retention)** |
-**[Failures](#failures)** |
-**[Usage](#usage)** |
-**[Troubleshooting](#troubleshooting)** |
-**[License](#license)**
+**[Install](#tada-install)** |
+**[Uninstall](#no_entry_sign-uninstall)** |
+**[TL;DR](#coffee-tldr)** |
+**[Features](#star-features)** |
+**[How does it work](#information_source-how-does-it-work)** |
+**[Retention](#repeat-retention)** |
+**[Usage](#computer-usage)** |
+**[Troubleshooting](#bulb-troubleshooting)** |
+**[License](#page_facing_up-license)**
 
 [![Linting](https://github.com/cytopia/linux-timemachine/workflows/Linting/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=Linting)
 [![Linux](https://github.com/cytopia/linux-timemachine/workflows/Linux/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=Linux)
@@ -27,19 +26,19 @@ to missing permission, you can explicitly disable them via `--no-perms`, `--no-o
 See [Troubleshooting](#troubleshooting) for examples.
 
 
-## Install
+## :tada: Install
 ```bash
 sudo make install
 ```
 
 
-## Uninstall
+## :no_entry_sign: Uninstall
 ```bash
 sudo make uninstall
 ```
 
 
-## TL;DR
+## :coffee: TL;DR
 
 Using [POSIX.1-2008](http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html) argument syntax:
 
@@ -72,7 +71,7 @@ $ timemachine --verbose /source/dir /target/dir -- --verbose
 ```
 
 
-## Features
+## :star: Features
 
 | Feature | Description |
 |---------|-------------|
@@ -83,7 +82,7 @@ $ timemachine --verbose /source/dir /target/dir -- --verbose
 | **Atomic**       | The whole backup procedure is atomic. Only if and when the backup procedure succeeds, it is then properly named and symlinked. Any non-successful backup directory is either waiting to be resumed or to be deleted. |
 
 
-## How does it work?
+## :information_source: How does it work?
 
 ### Backups
 
@@ -128,14 +127,16 @@ In case the `timemachine` script aborts (self-triggered, disk unavailable or any
 There will be a directory `.inprogress/` in your specified destination. This will hold all already transferred data and will be picked up during the next run.
 
 
-## Retention
+## :repeat: Retention
 
 As decribed above this project is [KISS](https://en.wikipedia.org/wiki/KISS_principle) driven and only tries to do one job: **back up your data**.
 
 Retention is a delicate topic as you want to be sure that data is removed as intended. For this there are already well-established tools that do an excellent job and have proven themselves over time: [tmpreaper](http://manpages.ubuntu.com/manpages/precise/man8/tmpreaper.8.html) and [tmpwatch](https://linux.die.net/man/8/tmpwatch).
 
 
-## Usage
+## :computer: Usage
+
+### Available options
 ```
 $ timemachine -h
 
@@ -181,8 +182,7 @@ Examples:
       timemachine /home/user -v /data -- --verbose > /var/log/timemachine.log
 ```
 
-
-## Crontab
+### Use with cron
 
 The following can be used as an example crontab entry. It assumes you have an external disk (NFS, USB, etc..) that mounts at `/backup`. Before adding the crontab entry, ensure the filesystem in `/backup` is mounted and use:
 
@@ -201,7 +201,7 @@ Next, add the following to crontab using `crontab -e` as whichever user you inte
 This will cause `linux-timemachine` to run at 2AM once per day. Since `timemachine` keeps track of backups with granularity up to the hour, minute and second, you could have it run more than once per day if you want backups to run more often.
 
 
-## Troubleshooting
+## :bulb: Troubleshooting
 
 ### Non-standard SSH port
 ```
@@ -232,7 +232,7 @@ $ timemachine src/ dst/ -- -L
 ```
 
 
-## License
+## :page_facing_up: License
 
 [MIT License](LICENSE.md)
 
