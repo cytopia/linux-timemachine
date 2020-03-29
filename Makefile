@@ -43,7 +43,7 @@ help:
 
 install: timemachine
 	install -d /usr/local/bin
-	install -m 644 timemachine /usr/local/bin/timemachine
+	install -m 755 timemachine /usr/local/bin/timemachine
 
 
 uninstall:
