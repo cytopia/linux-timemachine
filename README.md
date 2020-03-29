@@ -1,6 +1,15 @@
-# Linux TimeMachine (cli-only)
+# Linux Time Machine
 
-**[Install](#install)** | **[Uninstall](#uninstall)** | **[TL;DR](#tldr)** | **[Features](#features)** | **[Backups](#backups)** | **[Failures](#failures)** | **[Usage](#usage)** | **[Crontab](#crontab)** | **[Troubleshooting](#troubleshooting)** | **[License](#license)**
+**[Install](#install)** |
+**[Uninstall](#uninstall)** |
+**[TL;DR](#tldr)** |
+**[Features](#features)** |
+**[How does it work](#how-does-it-work)** |
+**[Retention](#retention)** |
+**[Failures](#failures)** |
+**[Usage](#usage)** |
+**[Troubleshooting](#troubleshooting)** |
+**[License](#license)**
 
 [![Linting](https://github.com/cytopia/linux-timemachine/workflows/Linting/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=Linting)
 [![Linux](https://github.com/cytopia/linux-timemachine/workflows/Linux/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=Linux)
@@ -8,13 +17,13 @@
 [![Tag](https://img.shields.io/github/tag/cytopia/linux-timemachine.svg)](https://github.com/cytopia/linux-timemachine/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-This shell script mimics the behavior of OSX's timemachine.
+`linux-timemachine` is a tiny and stable [KISS](https://en.wikipedia.org/wiki/KISS_principle) driven and [POSIX](https://en.wikipedia.org/wiki/POSIX) compliant script that mimics the behavior of OSX's timemachine.
 It uses [rsync](https://linux.die.net/man/1/rsync) to incrementally back up your data to a different
 directory, hard disk or remote server via SSH. All operations are incremental, atomic and automatically resumable.
 
-By default it uses `--recursive`, `--perms`, `--owner`, `--group`, `--times` and `--links`.
+By default it uses the rsync options: `--recursive`, `--perms`, `--owner`, `--group`, `--times` and `--links`.
 In case your target filesystem does not support any of those options or you cannot use them due
-to missing permission, you can explicitly disable those options via `--no-perms`, `--no-owner`, `--no-group`, `--no-times`,  and `--copy-links`.
+to missing permission, you can explicitly disable them via `--no-perms`, `--no-owner`, `--no-group`, `--no-times`,  and `--copy-links`.
 See [Troubleshooting](#troubleshooting) for examples.
 
 
@@ -65,30 +74,18 @@ $ timemachine --verbose /source/dir /target/dir -- --verbose
 
 ## Features
 
-#### SSH or local
-
-Local backups as well as backups via SSH are supported.
-
-#### Incremental
-
-Backups are always done incrementally using rsync's ability to hardlink to previous backup directories. You can nevertheless always see the full backup on the file system of any incrementally made backup without having to generate it. This will also be true when deleting any of the previously created backup directories. See the [Backups](#backups) section for how this is achieved via rsync.
-
-Incremental Backups also mean that only the changes on your source, compared to what is already on the target, have to be backed up. This will save you time as well as disk space on the target disk.
-
-#### Partial
-
-When backing up, files are transmitted partially, so in case a 2GB movie file backup is interrupted the next run will pick up exactly where it left off at that file and will not start to copy it from scratch.
-
-#### Resumable
-
-Not only is this script keeping partial files, but also the whole backup run is also resumable. Whenever there is an unfinished backup and you start `timemachine` again, it will automatically resume it. It will resume any previously failed backup as long as it finally succeeds.
-
-#### Atomic
-
-The whole backup procedure is atomic. Only if and when the backup procedure succeeds, it is then properly named and symlinked. Any non-successful backup directory is either waiting to be resumed or to be deleted.
+| Feature | Description |
+|---------|-------------|
+| **SSH or local** | Local backups as well as backups via SSH are supported. |
+| **Incremental**  | Backups are always done incrementally using rsync's ability to hardlink to previous backup directories. You can nevertheless always see the full backup on the file system of any incrementally made backup without having to generate it. This will also be true when deleting any of the previously created backup directories. See the [Backups](#backups) section for how this is achieved via rsync.<br/><br/>Incremental Backups also mean that only the changes on your source, compared to what is already on the target, have to be backed up. This will save you time as well as disk space on the target disk. |
+| **Partial**      | When backing up, files are transmitted partially, so in case a 2GB movie file backup is interrupted the next run will pick up exactly where it left off at that file and will not start to copy it from scratch. |
+| **Resumable**    | Not only is this script keeping partial files, but also the whole backup run is also resumable. Whenever there is an unfinished backup and you start `timemachine` again, it will automatically resume it. It will resume any previously failed backup as long as it finally succeeds. |
+| **Atomic**       | The whole backup procedure is atomic. Only if and when the backup procedure succeeds, it is then properly named and symlinked. Any non-successful backup directory is either waiting to be resumed or to be deleted. |
 
 
-## Backups
+## How does it work?
+
+### Backups
 
 The following directory structure will be created:
 ```bash
@@ -124,14 +121,18 @@ $ du -hd1 .
 497M    .
 ```
 
-`rsync` is magic :-)
-
-
-## Failures
+### Failure handling
 
 In case the `timemachine` script aborts (self-triggered, disk unavailable or any other reason) you can simply run it again to automatically resume the last failed run.
 
 There will be a directory `.inprogress/` in your specified destination. This will hold all already transferred data and will be picked up during the next run.
+
+
+## Retention
+
+As decribed above this project is [KISS](https://en.wikipedia.org/wiki/KISS_principle) driven and only tries to do one job: **back up your data**.
+
+Retention is a delicate topic as you want to be sure that data is removed as intended. For this there are already well-established tools that do an excellent job and have proven themselves over time: [tmpreaper](http://manpages.ubuntu.com/manpages/precise/man8/tmpreaper.8.html) and [tmpwatch](https://linux.die.net/man/8/tmpwatch).
 
 
 ## Usage
