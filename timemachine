@@ -12,7 +12,7 @@ MY_DESC="OSX-like timemachine cli script for Linux and BSD (and even OSX)"
 MY_PROJ="https://github.com/cytopia/linux-timemachine"
 MY_AUTH="cytopia"
 MY_MAIL="cytopia@everythingcli.org"
-MY_VERS="0.5"
+MY_VERS="0.6"
 MY_DATE="2020-03-29"
 
 # cmd [-r] <src> <dst> [rsync opts]
@@ -181,19 +181,17 @@ RSYNC_PARTIAL=".partial"
 # [resume]      --partial-dir:        Where to store unfinished files for resume
 # [atomic]      ${BACKUP_INPROGRESS}: Tmp dest dir for atomic operations
 
-if test -L "${DEST}/${BACKUP_LATEST}"; then
-	BTYPE="incremental"
-else
-	BTYPE="full"
-fi
-
-logmsg "Starting ${BTYPE} backup"
-logmsg "\$ rsync $* ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
+BTYPE=
 
 # Only link destination if it already exists
 if test -L "${DEST}/${BACKUP_LATEST}"; then
+	BTYPE="incremental"
+	logmsg "Starting incremental backup"
+	logmsg "\$ rsync $* ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
+
 	rsync \
 		--recursive \
+		--times \
 		--delete \
 		--delete-excluded \
 		--times \
@@ -206,8 +204,13 @@ if test -L "${DEST}/${BACKUP_LATEST}"; then
 		"$@" \
 		"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
 else
+	BTYPE="full"
+	logmsg "Starting full backup"
+	logmsg "\$ rsync $* ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
+
 	rsync \
 		--recursive \
+		--times \
 		--delete \
 		--delete-excluded \
 		--times \
