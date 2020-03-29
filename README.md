@@ -10,7 +10,7 @@
 
 This shell script mimics the behavior of OSX's timemachine.
 It uses [rsync](https://linux.die.net/man/1/rsync) to incrementally back up your data to a different
-directory or hard disk. All operations are incremental, atomic and automatically resumable.
+directory, hard disk or remote server via SSH. All operations are incremental, atomic and automatically resumable.
 
 By default it uses `--recursive`, `--perms`, `--owner`, `--group`, `--times` and `--links`.
 In case your target filesystem does not support any of those options or you cannot use them due
@@ -35,8 +35,11 @@ sudo make uninstall
 Using [POSIX.1-2008](http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html) argument syntax:
 
 ```bash
-# Recursive, incremental and atomic backup
+# Recursive, incremental and atomic backup (locally)
 $ timemachine /source/dir /target/dir
+
+# Recursive, incremental and atomic backup (via ssh)
+$ timemachine /source/dir user@host:target/dir
 
 # Append rsync options
 $ timemachine /source/dir /target/dir -- --specials --progress
@@ -54,6 +57,10 @@ $ timemachine --verbose /source/dir /target/dir -- --verbose
 
 
 ## Features
+
+#### SSH or local
+
+local backups as well as backups via SSH are supported
 
 #### Incremental
 
@@ -124,12 +131,14 @@ There will be a directory `.inprogress/` in your specified destination. This wil
 ```
 $ timemachine -h
 
-Usage: timemachine [-v] <source> <destination> -- [rsync opts]
+Usage: timemachine [-v] <source> <dest> -- [rsync opts]
+       timemachine [-v] <source> <host>:<dest> -- [rsync opts]
+       timemachine [-v] <source> <user>@<host>:<dest> -- [rsync opts]
        timemachine -V
        timemachine -h
 
 This shell script mimics the behavior of OSX's timemachine.
-It uses rsync to incrementally back up your data to a different directory.
+It uses rsync to incrementally back up your data to a different directory or remote server via SSH.
 All operations are incremental, atomic and automatically resumable.
 
 By default it uses --recursive --perms --owner --group --times --links.
@@ -137,15 +146,17 @@ In case your target filesystem does not support any of those options, you can ex
 disable those options via --no-perms --no-owner --no-group --no-times  and --copy-links.
 
 Required arguments:
-  <source>        Source directory
-  <destination>   Destination directory. Can also be a remote server
+  <source>              Source directory
+  <dest>                Destination directory.
+  <host>:<dest>         SSH host and destination directory
+  <user>@<host>:<dest>  SSH user, SSH host and destination directory
 
 Options:
-  -v, --verbose   Be verbose.
+  -v, --verbose         Be verbose.
 
 Misc Options:
-  -V, --version   Print version information and exit
-  -h, --help      Show this help screen
+  -V, --version         Print version information and exit
+  -h, --help            Show this help screen
 
 Examples:
   Simply back up one directory recursively
