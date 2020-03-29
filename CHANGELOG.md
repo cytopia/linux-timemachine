@@ -1,6 +1,12 @@
 # Changelog
 
 
+## Release v0.8
+
+#### Changed
+- [#22](https://github.com/cytopia/linux-timemachine/issues/22) Use `--owner`, `--group` and `--perms` by default
+
+
 ## Release v0.7
 
 #### Changed

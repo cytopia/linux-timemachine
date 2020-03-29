@@ -12,7 +12,7 @@ MY_DESC="OSX-like timemachine cli script for Linux and BSD (and even OSX)"
 MY_PROJ="https://github.com/cytopia/linux-timemachine"
 MY_AUTH="cytopia"
 MY_MAIL="cytopia@everythingcli.org"
-MY_VERS="0.7"
+MY_VERS="0.8"
 MY_DATE="2020-03-29"
 
 # cmd [-r] <src> <dst> [rsync opts]
@@ -30,14 +30,12 @@ print_usage() {
 	echo "       ${MY_NAME} -h"
 	echo
 	echo "This shell script mimics the behavior of OSX's timemachine."
-	echo "It uses rsync to incrementally backup your data to a different directory."
+	echo "It uses rsync to incrementally back up your data to a different directory."
 	echo "All operations are incremental, atomic and automatically resumable."
 	echo
-	echo "By default the only rsync option used is --recursive."
-	echo "This is due to the fact that some remote NAS implementations do not support"
-	echo "symlinks, changing owner, group or permissions (due to restrictive ACL's)."
-	echo "If you want to use any of those options you can simply append them."
-	echo "See Example section for how to."
+	echo "By default it uses --recursive --perms --owner --group --times --links."
+	echo "In case your target filesystem does not support any of those options, you can explicitly"
+	echo "disable those options via --no-perms --no-owner --no-group --no-times  and --copy-links."
 	echo
 	echo "Required arguments:"
 	echo "  <source>        Source directory"
@@ -51,12 +49,12 @@ print_usage() {
 	echo "  -h, --help      Show this help screen"
 	echo
 	echo "Examples:"
-	echo "  Simply backup one directory recursively"
+	echo "  Simply back up one directory recursively"
 	echo "      timemachine /home/user /data"
 	echo "  Do the same, but be verbose"
 	echo "      timemachine -v /home/user /data"
 	echo "  Append rsync options and be verbose"
-	echo "      timemachine /home/user /data -- --perms --special"
+	echo "      timemachine /home/user /data -- --no-perms"
 	echo "      timemachine --verbose /home/user /data -- --archive --progress --verbose"
 	echo "  Recommendation for cron run (no stdout, but stderr)"
 	echo "      timemachine /home/user /data -- -q"
@@ -191,6 +189,9 @@ if test -L "${DEST}/${BACKUP_LATEST}"; then
 
 	rsync \
 		--recursive \
+		--perms \
+		--owner \
+		--group \
 		--times \
 		--links \
 		--delete \
@@ -211,6 +212,9 @@ else
 
 	rsync \
 		--recursive \
+		--perms \
+		--owner \
+		--group \
 		--times \
 		--links \
 		--delete \

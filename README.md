@@ -8,11 +8,14 @@
 [![Tag](https://img.shields.io/github/tag/cytopia/linux-timemachine.svg)](https://github.com/cytopia/linux-timemachine/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-This shell script mimics the behavior of OSX's timemachine. It uses [rsync](https://linux.die.net/man/1/rsync) to incrementally back up your data to a different directory or hard disk. All operations are incremental, atomic and automatically resumable.
+This shell script mimics the behavior of OSX's timemachine.
+It uses [rsync](https://linux.die.net/man/1/rsync) to incrementally back up your data to a different
+directory or hard disk. All operations are incremental, atomic and automatically resumable.
 
-By default the only rsync option used are `--recursive`, `--times` and `--links`. This is because some remote NAS implementations do not support, changing owner, group or permissions (due to restrictive ACL's). If you want to use any other rsync arguments, you can simply append them.
-
-If you destination filesystem does not support symlinks see [Troubleshooting](#troubleshooting).
+By default it uses `--recursive`, `--perms`, `--owner`, `--group`, `--times` and `--links`.
+In case your target filesystem does not support any of those options or you cannot use them due
+to missing permission, you can explicitly disable those options via `--no-perms`, `--no-owner`, `--no-group`, `--no-times`,  and `--copy-links`.
+See [Troubleshooting](#troubleshooting) for examples.
 
 
 ## Install
@@ -129,11 +132,9 @@ This shell script mimics the behavior of OSX's timemachine.
 It uses rsync to incrementally back up your data to a different directory.
 All operations are incremental, atomic and automatically resumable.
 
-By default the only rsync option used is --recursive.
-This is because some remote NAS implementations do not support
-symlinks, changing owner, group or permissions (due to restrictive ACLs).
-If you want to use any of those options, you can simply append them.
-See the Example section for how to.
+By default it uses --recursive --perms --owner --group --times --links.
+In case your target filesystem does not support any of those options, you can explicitly
+disable those options via --no-perms --no-owner --no-group --no-times  and --copy-links.
 
 Required arguments:
   <source>        Source directory
@@ -152,7 +153,7 @@ Examples:
   Do the same, but be verbose
       timemachine -v /home/user /data
   Append rsync options and be verbose
-      timemachine /home/user /data -- --perms --special
+      timemachine /home/user /data -- --no-perms
       timemachine --verbose /home/user /data -- --archive --progress --verbose
   Recommendation for cron run (no stdout, but stderr)
       timemachine /home/user /data -- -q
@@ -180,6 +181,21 @@ This will cause `linux-timemachine` to run at 2AM once per day. Since `timemachi
 
 
 ## Troubleshooting
+
+### Disable preserving owner and group
+```bash
+$ timemachine src/ dst/ -- --no-owner --no-group
+```
+
+### Disable preserving permissions
+```bash
+$ timemachine src/ dst/ -- --no-owner --no-perms
+```
+
+### Disable preserving time
+```bash
+$ timemachine src/ dst/ -- --no-owner --no-times
+```
 
 ### Target filesystem does not support symlinks
 In case your target filesystem does not support symlinks, you can explicitly disable them and have
