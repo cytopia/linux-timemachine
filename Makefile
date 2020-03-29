@@ -7,13 +7,16 @@ endif
 # Default configuration
 # -------------------------------------------------------------------------------------------------
 
-.PHONY: help lint test clean _populate
+.PHONY: help lint lint-file lint-shell test clean _populate
+
 SHELL := /bin/bash
 
 TEMP = temp
 SRC := $(TEMP)/source
 DST := $(TEMP)/dest
 
+FL_VERSION = 0.3
+FL_IGNORES = .git/,.github/
 
 # -------------------------------------------------------------------------------------------------
 # Default targets
@@ -47,8 +50,26 @@ uninstall:
 	rm /usr/local/bin/timemachine
 
 
-lint:
-	docker run --rm -v $(PWD):/mnt koalaman/shellcheck:stable --shell=sh timemachine
+lint: lint-file lint-shell
+
+
+lint-file:
+	@echo "# -------------------------------------------------------------------- #"
+	@echo "# Lint files                                                           #"
+	@echo "# -------------------------------------------------------------------- #"
+	@docker run --rm $$(tty -s && echo "-it" || echo) -v $(PWD):/data cytopia/file-lint:$(FL_VERSION) file-cr --text --ignore '$(FL_IGNORES)' --path .
+	@docker run --rm $$(tty -s && echo "-it" || echo) -v $(PWD):/data cytopia/file-lint:$(FL_VERSION) file-crlf --text --ignore '$(FL_IGNORES)' --path .
+	@docker run --rm $$(tty -s && echo "-it" || echo) -v $(PWD):/data cytopia/file-lint:$(FL_VERSION) file-trailing-single-newline --text --ignore '$(FL_IGNORES)' --path .
+	@docker run --rm $$(tty -s && echo "-it" || echo) -v $(PWD):/data cytopia/file-lint:$(FL_VERSION) file-trailing-space --text --ignore '$(FL_IGNORES)' --path .
+	@docker run --rm $$(tty -s && echo "-it" || echo) -v $(PWD):/data cytopia/file-lint:$(FL_VERSION) file-utf8 --text --ignore '$(FL_IGNORES)' --path .
+	@docker run --rm $$(tty -s && echo "-it" || echo) -v $(PWD):/data cytopia/file-lint:$(FL_VERSION) file-utf8-bom --text --ignore '$(FL_IGNORES)' --path .
+
+
+lint-shell:
+	@echo "# -------------------------------------------------------------------- #"
+	@echo "# Lint shellcheck                                                      #"
+	@echo "# -------------------------------------------------------------------- #"
+	@docker run --rm -v $(PWD):/mnt koalaman/shellcheck:stable --shell=sh timemachine
 
 
 test:

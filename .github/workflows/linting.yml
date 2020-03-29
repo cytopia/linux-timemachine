@@ -31,6 +31,10 @@ jobs:
 
     strategy:
       fail-fast: false
+      matrix:
+        target:
+          - lint-file
+          - lint-shell
 
     name: Linting
     steps:
@@ -54,7 +58,9 @@ jobs:
       # ------------------------------------------------------------
       # Lint
       # ------------------------------------------------------------
-      - name: lint
+      - name: Lint
         shell: bash
         run: |
-          make lint
+          make ${TARGET}
+        env:
+          TARGET: ${{ matrix.target }}
