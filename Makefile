@@ -78,14 +78,14 @@ test:
 	@echo "# -------------------------------------------------------------------- #"
 	@echo
 	@$(MAKE) _populate
-	@if ! ./timemachine -v $(SRC) $(DST) 3>&1- 1>&2- 2>&3- | grep -E '.+'; then \
+	@if ! ./timemachine -d $(SRC) $(DST) 3>&1- 1>&2- 2>&3- | grep -E '.+'; then \
 		printf "[TEST] [OK]   No warnings detected for run without rsync arguments.\r\n"; \
 	else \
 		printf "[TEST] [FAIL] Warnings detected in stderr for run without rsync arguments.\r\n"; \
 		exit 1; \
 	fi
 	@sleep 2
-	@if ! ./timemachine -v $(SRC) $(DST) 3>&1- 1>&2- 2>&3- | grep -E '.+'; then \
+	@if ! ./timemachine -d $(SRC) $(DST) 3>&1- 1>&2- 2>&3- | grep -E '.+'; then \
 		printf "[TEST] [OK]   No warnings detected for run without rsync arguments.\r\n"; \
 	else \
 		printf "[TEST] [FAIL] Warnings detected in stderr for run without rsync arguments.\r\n"; \
@@ -99,7 +99,7 @@ test:
 	@echo "# -------------------------------------------------------------------- #"
 	@echo
 	@$(MAKE) _populate
-	@if ./timemachine -v $(SRC) $(DST); then \
+	@if ./timemachine -d $(SRC) $(DST); then \
 		printf "[TEST] [OK]   Run timemachine without rsync arguments.\r\n"; \
 	else \
 		printf "[TEST] [FAIL] Run timemachine without rsync arguments.\r\n"; \
@@ -155,7 +155,7 @@ test:
 	@echo "# -------------------------------------------------------------------- #"
 	@echo
 	@$(MAKE) _populate
-	@if ./timemachine -v $(SRC) $(DST) -- --progress; then \
+	@if ./timemachine -d $(SRC) $(DST) -- --progress; then \
 		printf "[TEST] [OK]   timemachine with rsync arguments.\r\n"; \
 	else \
 		printf "[TEST] [FAIL] timemachine with rsync arguments.\r\n"; \

@@ -1,6 +1,14 @@
 # Changelog
 
 
+## Release v0.9
+
+#### Added
+- [#9](https://github.com/cytopia/linux-timemachine/issues/9) Be able to backup to remote SSH host
+- Add debug option
+- Editorconfig
+
+
 ## Release v0.8
 
 #### Changed
