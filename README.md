@@ -46,12 +46,16 @@ $ timemachine --port 10000 /source/dir user@host:target/dir
 
 # Append rsync options
 $ timemachine /source/dir /target/dir -- --specials --progress
-$ timemachine /source/dir /target/dir -- --specials --perms
+$ timemachine /source/dir /target/dir -- --specials --no-perms
 $ timemachine /source/dir /target/dir -- --archive --progress
 
 # Make the timemachine script be more verbose
 $ timemachine -v /source/dir /target/dir
 $ timemachine --verbose /source/dir /target/dir
+
+# Make the timemachine script be even more verbose
+$ timemachine -d /source/dir /target/dir
+$ timemachine --debug /source/dir /target/dir
 
 # Make the timemachine script and rsync more verbose
 $ timemachine -v /source/dir /target/dir -- --verbose
