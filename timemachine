@@ -333,7 +333,7 @@ if link_exists "${DEST}/${BACKUP_LATEST}"; then
 		--delete \
 		--delete-excluded \
 		--partial-dir="${RSYNC_PARTIAL}" \
-		--link-dest="${DEST}/${BACKUP_LATEST}" \
+		--link-dest="../${BACKUP_LATEST}" \
 		"$@" \
 		"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
 else
