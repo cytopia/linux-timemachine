@@ -71,6 +71,7 @@ jobs:
         shell: bash
         run: |
           sudo make install
+          /usr/local/bin/timemachine --version
 
       # ------------------------------------------------------------
       # Test
@@ -81,3 +82,12 @@ jobs:
           make ${TARGET}
         env:
           TARGET: ${{ matrix.target }}
+
+      # ------------------------------------------------------------
+      # Uninstall
+      # ------------------------------------------------------------
+      - name: Uninstall
+        shell: bash
+        run: |
+          sudo make uninstall
+          if test -f /usr/local/bin/timemachine >/dev/null 2>&1; then false; fi
