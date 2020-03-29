@@ -12,8 +12,8 @@ MY_DESC="OSX-like timemachine cli script for Linux and BSD (and even OSX)"
 MY_PROJ="https://github.com/cytopia/linux-timemachine"
 MY_AUTH="cytopia"
 MY_MAIL="cytopia@everythingcli.org"
-MY_VERS="0.3"
-MY_DATE="2018-12-22"
+MY_VERS="0.4"
+MY_DATE="2020-03-29"
 
 # cmd [-r] <src> <dst> [rsync opts]
 verbose=    # -v Verbose output
