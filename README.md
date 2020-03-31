@@ -326,6 +326,11 @@ There are many other backup tools out there that might be a better fit for your 
 research, look at GitHub issues, source code and try out other projects.
 
 
+## :octocat: Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) to help to make this project more awesome.
+
+
 ## :page_facing_up: License
 
 **[MIT License](LICENSE.md)**
