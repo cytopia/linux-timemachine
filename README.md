@@ -270,6 +270,13 @@ $ timemachine src/ dst/ -- --dry-run
 $ timemachine --port 1337 src/ user@host:path/to/backup
 ```
 
+**How to speed up remote backups?**
+```bash
+# With  this option, rsync compresses the file data as it is sent to the des‐
+# tination machine, which reduces the amount of  data  being  transmitted
+$ timemachine src/ user@host:path/to/backup --compress
+```
+
 **How to preserve ACLs?**
 ```bash
 $ timemachine src/ dst/ -- --acls
