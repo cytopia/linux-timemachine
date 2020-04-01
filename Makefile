@@ -91,6 +91,7 @@ test: test-local-default-rel-slash-slash
 test: test-local-no_perms
 test: test-local-no_times
 test: test-local-copy_links
+test: test-remote-default
 
 
 test-local-default-abs-noslash-noslash:
@@ -127,6 +128,9 @@ test-local-copy_links:
 	./tests/05-run-local-copy_links.sh
 
 
+test-remote-default:
+	./tests/10-run-remote-default.sh
+
 # -------------------------------------------------------------------------------------------------
 # Helper targets
 # -------------------------------------------------------------------------------------------------
@@ -148,3 +152,12 @@ pull-docker-lint-file:
 
 pull-docker-lint-shell:
 	docker pull koalaman/shellcheck:stable
+
+pull-docker-ssh-base:
+	docker pull debian:buster-slim
+
+build-docker-ssh-server:
+	docker build -t cytopia/ssh-server -f "$(PWD)/tests/docker-ssh-server/Dockerfile" "$(PWD)/tests/docker-ssh-server"
+
+build-docker-ssh-client:
+	docker build -t cytopia/ssh-client -f "$(PWD)/tests/docker-ssh-client/Dockerfile" "$(PWD)/tests/docker-ssh-client"
