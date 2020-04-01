@@ -33,7 +33,12 @@ jobs:
       fail-fast: false
       matrix:
         target:
-          - test
+          - test-local-default
+          - test-local-incremental
+          - test-local-no_perms
+          - test-local-no_times
+          - test-local-copy_links
+          - test-old
 
     name: "[Linux ${{ matrix.target }}]"
     steps:
