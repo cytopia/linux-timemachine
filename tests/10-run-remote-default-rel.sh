@@ -13,8 +13,8 @@ FUNCPATH="${SCRIPTPATH}/.lib/functions.sh"
 ###
 ### Kill accidentally left artifacts
 ###
-run "docker rm -f ssh-server || true"
-run "docker rm -f ssh-client || true"
+run "docker rm -f ssh-server || true" >/dev/null 2>&1
+run "docker rm -f ssh-client || true" >/dev/null 2>&1
 
 
 ###
@@ -28,9 +28,16 @@ run "docker run -d --rm --name ssh-client -h client --link ssh-server -v '${SCRI
 ### Run 1
 ###
 run "sleep 5"
-if ! run "docker exec ssh-client /usr/bin/timemachine -d /tests root@server:backup1"; then
+if ! ERR="$( run "docker exec ssh-client /usr/bin/timemachine -d /tests root@server:backup1" 3>&1 1>&2 2>&3 )"; then
 	run "docker rm -f ssh-server"
 	run "docker rm -f ssh-client"
+	exit 1
+fi
+if [ -n "${ERR}" ]; then
+	printf "[TEST] [FAIL] Warnings detected.\\r\\n"
+	printf "Warnings:\\r\\n----------\\r\\n%s\\r\\n" "${ERR}"
+	run "docker rm -f ssh-server || true" >/dev/null 2>&1
+	run "docker rm -f ssh-client || true" >/dev/null 2>&1
 	exit 1
 fi
 
@@ -39,9 +46,16 @@ fi
 ### Run 2
 ###
 run "sleep 5"
-if ! run "docker exec ssh-client /usr/bin/timemachine -d /tests root@server:backup1"; then
+if ! ERR="$( run "docker exec ssh-client /usr/bin/timemachine -d /tests root@server:backup1" 3>&1 1>&2 2>&3 )"; then
 	run "docker rm -f ssh-server"
 	run "docker rm -f ssh-client"
+	exit 1
+fi
+if [ -n "${ERR}" ]; then
+	printf "[TEST] [FAIL] Warnings detected.\\r\\n"
+	printf "Warnings:\\r\\n----------\\r\\n%s\\r\\n" "${ERR}"
+	run "docker rm -f ssh-server || true" >/dev/null 2>&1
+	run "docker rm -f ssh-client || true" >/dev/null 2>&1
 	exit 1
 fi
 
