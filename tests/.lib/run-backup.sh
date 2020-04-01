@@ -18,6 +18,7 @@ run_backup() {
 	local dst_dir="${3}"
 	local rsync_args="${4}"
 	local backup_type="${5}"
+	local pwd="${6:-/}"
 
 	local out
 	local err
@@ -33,7 +34,7 @@ run_backup() {
 	###
 	### Run and check for failure
 	###
-	if ! run "\"${timemachine_path}\" -d \"${src_dir}\" \"${dst_dir}\" ${rsync_args} > \"${out}\" 2> \"${err}\""; then
+	if ! run "cd \"${pwd}\" && \"${timemachine_path}\" -d \"${src_dir}\" \"${dst_dir}\" ${rsync_args} > \"${out}\" 2> \"${err}\""; then
 		printf "[TEST] [FAIL] Run failed.\\r\\n"
 		cat "${out}"
 		cat "${err}"
@@ -69,19 +70,19 @@ run_backup() {
 	###
 	### Check for existing latest symlink
 	###
-	if [ ! -L "${dst_dir}/current" ]; then
-		printf "[TEST] [FAIL] No latest symlink available: %s\\r\\n" "${dst_dir}/current"
+	if [ ! -L "${pwd}/${dst_dir}/current" ]; then
+		printf "[TEST] [FAIL] No latest symlink available: %s\\r\\n" "${pwd}/${dst_dir}/current"
 		rm "${out}"
 		rm "${err}"
 		exit 1
 	fi
-	printf "[TEST] [OK]   Latest symlink available: %s\\r\\n" "${dst_dir}/current"
+	printf "[TEST] [OK]   Latest symlink available: %s\\r\\n" "${pwd}/${dst_dir}/current"
 
 	###
 	### Check partial backup .inprogress directory
 	###
-	if [ -d "${dst_dir}/current/.inprogress" ]; then
-		printf "[TEST] [FAIL] Undeleted '.inprogress' directory found: %s\\r\\n" "${dst_dir}/current/.inprogress"
+	if [ -d "${pwd}/${dst_dir}/current/.inprogress" ]; then
+		printf "[TEST] [FAIL] Undeleted '.inprogress' directory found: %s\\r\\n" "${pwd}/${dst_dir}/current/.inprogress"
 		rm "${out}"
 		rm "${err}"
 		exit 1
