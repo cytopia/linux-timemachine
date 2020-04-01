@@ -258,3 +258,8 @@ _populate: clean
 	@echo "c" > "$(SRC)/c"
 	@chmod -w "$(SRC)/a"
 	@chmod +x "$(SRC)/b"
+
+pull-docker-lint-file:
+	docker pull cytopia/file-lint:$(FL_VERSION)
+pull-docker-lint-shell:
+	docker pull koalaman/shellcheck:stable

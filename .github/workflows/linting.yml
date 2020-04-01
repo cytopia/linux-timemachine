@@ -58,6 +58,13 @@ jobs:
       # ------------------------------------------------------------
       # Lint
       # ------------------------------------------------------------
+      - name: Pull Artifacts
+        shell: bash
+        run: |
+          while ! make pull-docker-${TARGET}; do sleep 1; done
+        env:
+          TARGET: ${{ matrix.target }}
+
       - name: Lint
         shell: bash
         run: |
