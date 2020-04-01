@@ -15,7 +15,7 @@ FUNCPATH="${SCRIPTPATH}/.lib/functions.sh"
 ###
 RSYNC_ARGS=""
 
-print_section "01 Default (slash noslash)"
+print_section "01 Default (slash slash)"
 
 ### ################################################################################################
 ### ################################################################################################
@@ -74,6 +74,7 @@ sleep 2
 check_file() {
 	local file="${1}"
 	local perm="${2}"
+	local destination=
 	destination="${DST_DIR}/current"
 
 	print_subline "Validate ${file}"
@@ -93,6 +94,7 @@ check_file() {
 
 check_link() {
 	local link="${1}"
+	local destination=
 	destination="${DST_DIR}/current"
 
 	print_subline "Validate ${link}"
@@ -116,7 +118,7 @@ print_subline "Run Backup"
 run_backup \
 	"${SCRIPTPATH}/../timemachine" \
 	"${SRC_DIR}/" \
-	"${DST_DIR}" \
+	"${DST_DIR}/" \
 	"${RSYNC_ARGS}" \
 	"full"
 
@@ -146,7 +148,7 @@ print_subline "Run Backup"
 run_backup \
 	"${SCRIPTPATH}/../timemachine" \
 	"${SRC_DIR}/" \
-	"${DST_DIR}" \
+	"${DST_DIR}/" \
 	"${RSYNC_ARGS}" \
 	"incremental"
 

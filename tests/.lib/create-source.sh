@@ -17,6 +17,7 @@ create_file() {
 	local file_name="${2}"
 	local file_size="${3}"
 	local file_perms="${4}"
+
 	local file_path="${src_dir}/${file_name}"
 
 	# Create directory if it doesn't exist
@@ -40,7 +41,7 @@ create_link() {
 	local src_dir="${1}"
 	local link_name="${2}"
 	local link_from="${3}"
-	local link_path="${src_dir}/$link_name}"
+	local link_path="${src_dir}/${link_name}"
 
 	# Create directory if it doesn't exist
 	if [ ! -d "$( dirname "${link_path}" )" ]; then
