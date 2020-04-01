@@ -91,7 +91,8 @@ test: test-local-default-rel-slash-slash
 test: test-local-no_perms
 test: test-local-no_times
 test: test-local-copy_links
-test: test-remote-default
+test: test-remote-default-abs
+test: test-remote-default-rel
 
 
 test-local-default-abs-noslash-noslash:
@@ -128,8 +129,11 @@ test-local-copy_links:
 	./tests/05-run-local-copy_links.sh
 
 
-test-remote-default:
-	./tests/10-run-remote-default.sh
+test-remote-default-abs:
+	./tests/10-run-remote-default-abs.sh
+
+test-remote-default-rel:
+	./tests/10-run-remote-default-rel.sh
 
 # -------------------------------------------------------------------------------------------------
 # Helper targets
