@@ -102,7 +102,7 @@ create_tmp_file() {
 	if ! command -v mktemp >/dev/null 2>&1; then
 		i=0
 		local prefix="/tmp/timemachine"
-		while [ ! -f "${prefix}-${i}.txt" ]; do
+		while [ -f "${prefix}-${i}.txt" ]; do
 			i="$(( i + 1 ))"
 		done
 		tmp_file="${prefix}-${i}.txt"
@@ -119,12 +119,31 @@ create_tmp_file() {
 ### Create tmp dir
 ###
 create_tmp_dir() {
+	local absolute="${1:-1}"
+	local pwd="${2:-}"
 	local tmp_dir=
 
+	###
+	### Create relative path tmp dir
+	###
+	if [ "${absolute}" = "0" ]; then
+		i=0
+		while  [ -d "${pwd}/.tmp/${i}" ] || [ -f "${pwd}/.tmp/${i}" ]; do
+			i="$(( i + 1 ))"
+		done
+		tmp_dir=".tmp/${i}"
+		run "cd '${pwd}' && mkdir -p '${tmp_dir}'" "1" "stderr" "stderr"
+		echo "${tmp_dir}"
+		return
+	fi
+
+	###
+	### Create absolute path tmp dir
+	###
 	if ! command -v mktemp >/dev/null 2>&1; then
 		i=0
 		local prefix="/tmp/timemachine"
-		while [ ! -d "${prefix}-${i}" ] && [ ! -f "${prefix}-${i}" ]; do
+		while [ -d "${prefix}-${i}" ] || [ -f "${prefix}-${i}" ]; do
 			i="$(( i + 1 ))"
 		done
 		tmp_dir="${prefix}-${i}"

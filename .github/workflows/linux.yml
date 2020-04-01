@@ -33,11 +33,14 @@ jobs:
       fail-fast: false
       matrix:
         target:
-          - test-local-default-noslash-noslash
-          - test-local-default-noslash-slash
-          - test-local-default-slash-noslash
-          - test-local-default-slash-slash
-          - test-local-incremental
+          - test-local-default-abs-noslash-noslash
+          - test-local-default-abs-noslash-slash
+          - test-local-default-abs-slash-noslash
+          - test-local-default-abs-slash-slash
+          - test-local-default-rel-noslash-noslash
+          - test-local-default-rel-noslash-slash
+          - test-local-default-rel-slash-noslash
+          - test-local-default-rel-slash-slash
           - test-local-no_perms
           - test-local-no_times
           - test-local-copy_links
