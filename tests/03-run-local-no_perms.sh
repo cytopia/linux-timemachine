@@ -60,9 +60,11 @@ create_file "${SRC_DIR}" "${FILE3_NAME}" "1" "${FILE3_PERM}"
 check() {
 	local file="${1}"
 	local perm="${2}"
+	local destination
+	destination="${DST_DIR}/current/$(basename "${SRC_DIR}")"
 
 	print_subline "Validate ${file}"
-	check_dst_file_perm "${file}" "${perm}" "$(get_default_dest_file_perm "${perm}")" "${DST_DIR}"
+	check_dst_file_perm "${file}" "${perm}" "$(get_default_dest_file_perm "${perm}")" "${destination}"
 }
 
 

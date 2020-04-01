@@ -19,7 +19,7 @@ set -o pipefail
 check_src_dst_file_exist() {
 	local f="${1}"
 	local src_dir="${2}"
-	local dst_dir="${3}/current"
+	local dst_dir="${3}"
 
 	if [ ! -f "${src_dir}/${f}" ]; then
 		printf "[TEST] [FAIL] Source file does not exist: %s\\r\\n" "${src_dir}/${f}"
@@ -41,7 +41,7 @@ check_src_dst_file_exist() {
 ###
 check_dst_file_is_file() {
 	local f="${1}"
-	local dst_dir="${2}/current"
+	local dst_dir="${2}"
 
 	if [ -d "${dst_dir}/${f}" ]; then
 		printf "[TEST] [FAIL] Destination file is a directory: %s\\r\\n" "${dst_dir}/${f}"
@@ -63,7 +63,7 @@ check_dst_file_is_file() {
 ###
 check_dst_file_is_link() {
 	local f="${1}"
-	local dst_dir="${2}/current"
+	local dst_dir="${2}"
 
 	if [ -d "${dst_dir}/${f}" ]; then
 		printf "[TEST] [FAIL] Destination file is a directory: %s\\r\\n" "${dst_dir}/${f}"
@@ -88,7 +88,7 @@ check_dst_file_is_link() {
 check_src_dst_file_equal() {
 	local f="${1}"
 	local src_dir="${2}"
-	local dst_dir="${3}/current"
+	local dst_dir="${3}"
 
 	if ! run "cmp -s '${src_dir}/${f}' '${dst_dir}/${f}'"; then
 		printf "[TEST] [FAIL] Source (%s) and dest (%s) files differ\\r\\n" "${src_dir}/${f}" "${dst_dir}/${f}"
