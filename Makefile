@@ -91,7 +91,8 @@ test: test-local-default-rel-slash-slash
 test: test-local-no_perms
 test: test-local-no_times
 test: test-local-copy_links
-test: test-remote-default
+test: test-remote-default-abs
+test: test-remote-default-rel
 
 
 test-local-default-abs-noslash-noslash:
