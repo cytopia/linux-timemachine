@@ -15,6 +15,7 @@
 [![Linting](https://github.com/cytopia/linux-timemachine/workflows/Linting/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=Linting)
 [![Linux](https://github.com/cytopia/linux-timemachine/workflows/Linux/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=Linux)
 [![MacOS](https://github.com/cytopia/linux-timemachine/workflows/MacOS/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=MacOS)
+[![SSH](https://github.com/cytopia/linux-timemachine/workflows/SSH/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=SSH)
 [![Tag](https://img.shields.io/github/tag/cytopia/linux-timemachine.svg)](https://github.com/cytopia/linux-timemachine/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
@@ -338,6 +339,7 @@ research, look at GitHub issues, source code and try out other projects.
 [![Linting](https://github.com/cytopia/linux-timemachine/workflows/Linting/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=Linting)
 [![Linux](https://github.com/cytopia/linux-timemachine/workflows/Linux/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=Linux)
 [![MacOS](https://github.com/cytopia/linux-timemachine/workflows/MacOS/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=MacOS)
+[![SSH](https://github.com/cytopia/linux-timemachine/workflows/SSH/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=SSH)
 
 The script is written and maintained with maximum care.
 In order to retain a reliable and stable backup solution, a lot of effort goes into a huge amount of

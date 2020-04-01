@@ -1,0 +1,85 @@
+---
+
+# -------------------------------------------------------------------------------------------------
+# Job Name
+# -------------------------------------------------------------------------------------------------
+name: SSH
+
+
+# -------------------------------------------------------------------------------------------------
+# When to run
+# -------------------------------------------------------------------------------------------------
+on:
+  # Runs on Pull Requests
+  pull_request:
+
+  # Runs on master Branch and Tags
+  push:
+    branches:
+      - master
+    tags:
+      - '[0-9]+.[0-9]+*'
+
+
+# -------------------------------------------------------------------------------------------------
+# What to run
+# -------------------------------------------------------------------------------------------------
+jobs:
+  ssh:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - test-remote-default
+
+    name: "[SSH ${{ matrix.target }}]"
+    steps:
+
+      # ------------------------------------------------------------
+      # Checkout repository
+      # ------------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v1
+
+      - name: Show environment
+        shell: bash
+        run: |
+          env
+
+      - name: Show user
+        shell: bash
+        run: |
+          id
+
+      - name: Show bash versions
+        shell: bash
+        run: |
+          bash --version
+
+      - name: Show rsync versions
+        shell: bash
+        run: |
+          rsync --version
+
+      # ------------------------------------------------------------
+      # Build
+      # ------------------------------------------------------------
+      - name: Build
+        shell: bash
+        run: |
+          while ! make pull-docker-ssh-base; do sleep 1; done
+          while ! make build-docker-ssh-server; do sleep 1; done
+          while ! make build-docker-ssh-client; do sleep 1; done
+
+      # ------------------------------------------------------------
+      # Test
+      # ------------------------------------------------------------
+      - name: Test
+        shell: bash
+        run: |
+          make ${TARGET}
+        env:
+          TARGET: ${{ matrix.target }}
