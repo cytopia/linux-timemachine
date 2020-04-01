@@ -38,7 +38,7 @@ help:
 
 
 # -------------------------------------------------------------------------------------------------
-# Targets
+# System targets
 # -------------------------------------------------------------------------------------------------
 
 install: timemachine
@@ -49,6 +49,10 @@ install: timemachine
 uninstall:
 	rm /usr/local/bin/timemachine
 
+
+# -------------------------------------------------------------------------------------------------
+# Lint targets
+# -------------------------------------------------------------------------------------------------
 
 lint: lint-file lint-shell
 
@@ -65,13 +69,17 @@ lint-file:
 	@docker run --rm $$(tty -s && echo "-it" || echo) -v $(PWD):/data cytopia/file-lint:$(FL_VERSION) file-utf8-bom --text --ignore '$(FL_IGNORES)' --path .
 
 
+# -------------------------------------------------------------------------------------------------
+# Test targets
+# -------------------------------------------------------------------------------------------------
+
 lint-shell:
 	@echo "# -------------------------------------------------------------------- #"
 	@echo "# Lint shellcheck                                                      #"
 	@echo "# -------------------------------------------------------------------- #"
 	@docker run --rm -v $(PWD):/mnt koalaman/shellcheck:stable --shell=sh timemachine
 
-test: test-old
+
 test: test-local-default-abs-noslash-noslash
 test: test-local-default-abs-noslash-slash
 test: test-local-default-abs-slash-noslash
@@ -84,162 +92,39 @@ test: test-local-no_perms
 test: test-local-no_times
 test: test-local-copy_links
 
+
 test-local-default-abs-noslash-noslash:
 	./tests/01-run-local-default-abs-noslash-noslash.sh
+
 test-local-default-abs-noslash-slash:
 	./tests/01-run-local-default-abs-noslash-slash.sh
+
 test-local-default-abs-slash-noslash:
 	./tests/01-run-local-default-abs-slash-noslash.sh
+
 test-local-default-abs-slash-slash:
 	./tests/01-run-local-default-abs-slash-slash.sh
+
 test-local-default-rel-noslash-noslash:
 	./tests/02-run-local-default-rel-noslash-noslash.sh
+
 test-local-default-rel-noslash-slash:
 	./tests/02-run-local-default-rel-noslash-slash.sh
+
 test-local-default-rel-slash-noslash:
 	./tests/02-run-local-default-rel-slash-noslash.sh
+
 test-local-default-rel-slash-slash:
 	./tests/02-run-local-default-rel-slash-slash.sh
 
 test-local-no_perms:
 	./tests/03-run-local-no_perms.sh
+
 test-local-no_times:
 	./tests/04-run-local-no_times.sh
+
 test-local-copy_links:
 	./tests/05-run-local-copy_links.sh
-
-test-old:
-	@echo "# -------------------------------------------------------------------- #"
-	@echo "# 1. Check for stderr errors/warnings                                  #"
-	@echo "# -------------------------------------------------------------------- #"
-	@echo
-	@$(MAKE) _populate
-	if ./timemachine -d $(SRC) $(DST); then \
-		printf "[TEST] [OK]   No warnings detected for run without rsync arguments.\r\n"; \
-	else \
-		printf "[TEST] [FAIL] Warnings detected in stderr for run without rsync arguments.\r\n"; \
-		exit 1; \
-	fi
-	@sleep 2
-	if ./timemachine -d $(SRC) $(DST); then \
-		printf "[TEST] [OK]   No warnings detected for run without rsync arguments.\r\n"; \
-	else \
-		printf "[TEST] [FAIL] Warnings detected in stderr for run without rsync arguments.\r\n"; \
-		exit 1; \
-	fi
-	@echo
-
-
-	@echo "# -------------------------------------------------------------------- #"
-	@echo "# 2. Testing timemachine without rsync arguments                       #"
-	@echo "# -------------------------------------------------------------------- #"
-	@echo
-	@$(MAKE) _populate
-	if ./timemachine -d $(SRC) $(DST); then \
-		printf "[TEST] [OK]   Run timemachine without rsync arguments.\r\n"; \
-	else \
-		printf "[TEST] [FAIL] Run timemachine without rsync arguments.\r\n"; \
-		exit 1; \
-	fi
-	if test -L $(DST)/current; then \
-		printf "[TEST] [OK]   Symlink 'current' exists.\r\n"; \
-	else \
-		printf "[TEST] [FAIL] Symlink 'current' does not exists.\r\n"; \
-		exit 1; \
-	fi
-	if test -d $(DST)/current/source; then \
-		printf "[TEST] [OK]   Source directory exists in target.\r\n"; \
-	else \
-		printf "[TEST] [FAIL] Source directory does not exist in target.\r\n"; \
-		exit 1; \
-	fi
-	if test -f $(DST)/current/source/a; then \
-		printf "[TEST] [OK]   File 'a' exists after backup.\r\n"; \
-	else \
-		printf "[TEST] [FAIL] File 'a' does not exist after backup.\r\n"; \
-		exit 1; \
-	fi
-	if test -f $(DST)/current/source/b; then \
-		printf "[TEST] [OK]   File 'b' exists after backup.\r\n"; \
-	else \
-		printf "[TEST] [FAIL] File 'b' does not exist after backup.\r\n"; \
-		exit 1; \
-	fi
-	if test -f $(DST)/current/source/c; then \
-		printf "[TEST] [OK]   File 'c' exists after backup.\r\n"; \
-	else \
-		printf "[TEST] [FAIL] File 'c' does not exist after backup.\r\n"; \
-		exit 1; \
-	fi
-	if ! test -w $(DST)/current/source/a; then \
-		printf "[TEST] [OK]   File 'a' only has read permissions as expected.\r\n"; \
-	else \
-		printf "[TEST] [FAIL] File 'a' has write permissions which should not have happened.\r\n"; \
-		exit 1; \
-	fi
-	if test -x $(DST)/current/source/b; then \
-		printf "[TEST] [OK]   File 'b' has execute permissions as expected.\r\n"; \
-	else \
-		printf "[TEST] [FAIL] File 'b' does not have execute permissions.\r\n"; \
-		exit 1; \
-	fi
-	@echo
-
-
-	@echo "# -------------------------------------------------------------------- #"
-	@echo "# 3. Testing timemachine with rsync arguments                          #"
-	@echo "# -------------------------------------------------------------------- #"
-	@echo
-	@$(MAKE) _populate
-	@if ./timemachine -d $(SRC) $(DST) -- --progress; then \
-		printf "[TEST] [OK]   timemachine with rsync arguments.\r\n"; \
-	else \
-		printf "[TEST] [FAIL] timemachine with rsync arguments.\r\n"; \
-		exit 1; \
-	fi
-	@if test -L $(DST)/current; then \
-		printf "[TEST] [OK]   Symlink 'current' exists.\r\n"; \
-	else \
-		printf "[TEST] [FAIL] Symlink 'current' does not exists.\r\n"; \
-		exit 1; \
-	fi
-	@if test -d $(DST)/current/source; then \
-		printf "[TEST] [OK]   Source directory exists in target.\r\n"; \
-	else \
-		printf "[TEST] [FAIL] Source directory does not exist in target.\r\n"; \
-		exit 1; \
-	fi
-	@if test -f $(DST)/current/source/a; then \
-		printf "[TEST] [OK]   File 'a' exists after backup.\r\n"; \
-	else \
-		printf "[TEST] [FAIL] File 'a' does not exist after backup.\r\n"; \
-		exit 1; \
-	fi
-	@if test -f $(DST)/current/source/b; then \
-		printf "[TEST] [OK]   File 'b' exists after backup.\r\n"; \
-	else \
-		printf "[TEST] [FAIL] File 'b' does not exist after backup.\r\n"; \
-		exit 1; \
-	fi
-	@if test -f $(DST)/current/source/c; then \
-		printf "[TEST] [OK]   File 'c' exists after backup.\r\n"; \
-	else \
-		printf "[TEST] [FAIL] File 'c' does not exist after backup.\r\n"; \
-		exit 1; \
-	fi
-	@if ! test -w $(DST)/current/source/a; then \
-		printf "[TEST] [OK]   File 'a' only has read permissions as expected.\r\n"; \
-	else \
-		printf "[TEST] [FAIL] File 'a' has write permissions which should not have happened.\r\n"; \
-		exit 1; \
-	fi
-	@if test -x $(DST)/current/source/b; then \
-		printf "[TEST] [OK]   File 'b' has execute permissions as expected.\r\n"; \
-	else \
-		printf "[TEST] [FAIL] File 'b' does not have execute permissions.\r\n"; \
-		exit 1; \
-	fi
-	@echo
 
 
 # -------------------------------------------------------------------------------------------------
@@ -248,7 +133,6 @@ test-old:
 
 clean:
 	@rm -rf $(TEMP)
-
 
 _populate: clean
 	@mkdir -p "$(DST)"
@@ -261,5 +145,6 @@ _populate: clean
 
 pull-docker-lint-file:
 	docker pull cytopia/file-lint:$(FL_VERSION)
+
 pull-docker-lint-shell:
 	docker pull koalaman/shellcheck:stable
