@@ -333,6 +333,19 @@ There are many other backup tools out there that might be a better fit for your 
 research, look at GitHub issues, source code and try out other projects.
 
 
+## :lock: Reliability
+
+[![Linting](https://github.com/cytopia/linux-timemachine/workflows/Linting/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=Linting)
+[![Linux](https://github.com/cytopia/linux-timemachine/workflows/Linux/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=Linux)
+[![MacOS](https://github.com/cytopia/linux-timemachine/workflows/MacOS/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=MacOS)
+
+The script is written and maintained with maximum care.
+In order to retain a reliable and stable backup solution, a lot of effort goes into a huge amount of
+**[integration and regression tests](https://github.com/cytopia/linux-timemachine/actions)**.
+These tests not only give you measurable confidence, but also help new contributors to not
+accidentally introduce new or old bugs.
+
+
 ## :octocat: Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) to help to make this project more awesome.
