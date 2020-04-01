@@ -71,8 +71,25 @@ lint-shell:
 	@echo "# -------------------------------------------------------------------- #"
 	@docker run --rm -v $(PWD):/mnt koalaman/shellcheck:stable --shell=sh timemachine
 
+test: test-old
+test: test-local-default
+test: test-local-incremental
+test: test-local-no_perms
+test: test-local-no_times
+test: test-local-copy_links
 
-test:
+test-local-default:
+	./tests/01-run-local-default.sh
+test-local-incremental:
+	./tests/02-run-local-incremental.sh
+test-local-no_perms:
+	./tests/03-run-local-no_perms.sh
+test-local-no_times:
+	./tests/04-run-local-no_times.sh
+test-local-copy_links:
+	./tests/05-run-local-copy_links.sh
+
+test-old:
 	@echo "# -------------------------------------------------------------------- #"
 	@echo "# 1. Check for stderr errors/warnings                                  #"
 	@echo "# -------------------------------------------------------------------- #"
