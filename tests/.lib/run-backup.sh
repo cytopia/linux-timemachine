@@ -33,7 +33,7 @@ run_backup() {
 	###
 	### Run and check for failure
 	###
-	if ! run "\"${timemachine_path}\" -d \"${src_dir}/\" \"${dst_dir}/\" ${rsync_args} > \"${out}\" 2> \"${err}\""; then
+	if ! run "\"${timemachine_path}\" -d \"${src_dir}\" \"${dst_dir}\" ${rsync_args} > \"${out}\" 2> \"${err}\""; then
 		printf "[TEST] [FAIL] Run failed.\\r\\n"
 		cat "${out}"
 		cat "${err}"

@@ -33,7 +33,10 @@ jobs:
       fail-fast: false
       matrix:
         target:
-          - test-local-default
+          - test-local-default-noslash-noslash
+          - test-local-default-noslash-slash
+          - test-local-default-slash-noslash
+          - test-local-default-slash-slash
           - test-local-incremental
           - test-local-no_perms
           - test-local-no_times

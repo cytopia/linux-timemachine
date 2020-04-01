@@ -13,9 +13,9 @@ FUNCPATH="${SCRIPTPATH}/.lib/functions.sh"
 ###
 ### RSYNC ARGUMENTS
 ###
-RSYNC_ARGS="-- --copy-links"
+RSYNC_ARGS=""
 
-print_section "05 --copy-links"
+print_section "01 Default (noslash slash)"
 
 ### ################################################################################################
 ### ################################################################################################
@@ -60,6 +60,7 @@ create_file "${SRC_DIR}" "${FILE3_NAME}" "1" "${FILE3_PERM}"
 create_link "${SRC_DIR}" "${LINK1_NAME}" "${LINK1_FROM}"
 create_link "${SRC_DIR}" "${LINK2_NAME}" "${LINK2_FROM}"
 create_link "${SRC_DIR}" "${LINK3_NAME}" "${LINK3_FROM}"
+sleep 2
 
 
 ### ################################################################################################
@@ -72,21 +73,31 @@ create_link "${SRC_DIR}" "${LINK3_NAME}" "${LINK3_FROM}"
 
 check_file() {
 	local file="${1}"
-	local destination=
+	local perm="${2}"
 	destination="${DST_DIR}/current/$(basename "${SRC_DIR}")"
 
 	print_subline "Validate ${file}"
+
 	check_dst_file_is_file "${file}" "${destination}"
+
+	check_src_dst_file_exist "${file}" "${SRC_DIR}" "${destination}"
 	check_src_dst_file_equal "${file}" "${SRC_DIR}" "${destination}"
+
+	check_dst_file_perm         "${file}" "${perm}" "${perm}" "${destination}"
+	check_src_dst_file_perm     "${file}" "${SRC_DIR}" "${destination}"
+	check_src_dst_file_size     "${file}" "${SRC_DIR}" "${destination}"
+	check_src_dst_file_mod_time "${file}" "${SRC_DIR}" "${destination}"
+	check_src_dst_file_uid      "${file}" "${SRC_DIR}" "${destination}"
+	check_src_dst_file_gid      "${file}" "${SRC_DIR}" "${destination}"
 }
 
 check_link() {
 	local link="${1}"
-	local destination=
 	destination="${DST_DIR}/current/$(basename "${SRC_DIR}")"
 
 	print_subline "Validate ${link}"
-	check_dst_file_is_file "${link}" "${destination}"
+	check_src_dst_file_exist "${link}" "${SRC_DIR}" "${destination}"
+	check_dst_file_is_link "${link}" "${destination}"
 	check_src_dst_file_equal "${link}" "${SRC_DIR}" "${destination}"
 }
 
@@ -105,13 +116,16 @@ print_subline "Run Backup"
 run_backup \
 	"${SCRIPTPATH}/../timemachine" \
 	"${SRC_DIR}" \
-	"${DST_DIR}" \
+	"${DST_DIR}/" \
 	"${RSYNC_ARGS}" \
 	"full"
 
-check_file "${FILE1_NAME}"
-check_file "${FILE2_NAME}"
-check_file "${FILE3_NAME}"
+# TODO: check for .inprogress
+# TODO: add --append-verify (and check for rsync version >= 3)
+
+check_file "${FILE1_NAME}" "${FILE1_PERM}"
+check_file "${FILE2_NAME}" "${FILE2_PERM}"
+check_file "${FILE3_NAME}" "${FILE3_PERM}"
 
 check_link "${LINK1_NAME}"
 check_link "${LINK2_NAME}"
@@ -132,13 +146,13 @@ print_subline "Run Backup"
 run_backup \
 	"${SCRIPTPATH}/../timemachine" \
 	"${SRC_DIR}" \
-	"${DST_DIR}" \
+	"${DST_DIR}/" \
 	"${RSYNC_ARGS}" \
 	"incremental"
 
-check_file "${FILE1_NAME}"
-check_file "${FILE2_NAME}"
-check_file "${FILE3_NAME}"
+check_file "${FILE1_NAME}" "${FILE1_PERM}"
+check_file "${FILE2_NAME}" "${FILE2_PERM}"
+check_file "${FILE3_NAME}" "${FILE3_PERM}"
 
 check_link "${LINK1_NAME}"
 check_link "${LINK2_NAME}"

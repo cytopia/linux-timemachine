@@ -22,7 +22,7 @@ check_dst_file_perm() {
 	local src_perm="${2}"
 	local exp_perm="${3}"
 	local dst_perm=
-	local dst_dir="${4}/current"
+	local dst_dir="${4}"
 
 	dst_perm="$( get_file_perm "${dst_dir}/${f}" )"
 
@@ -45,7 +45,7 @@ check_dst_file_perm() {
 check_src_dst_file_perm() {
 	local f="${1}"
 	local src_dir="${2}"
-	local dst_dir="${3}/current"
+	local dst_dir="${3}"
 
 	local src_perm=
 	local dst_perm=

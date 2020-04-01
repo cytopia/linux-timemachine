@@ -72,14 +72,23 @@ lint-shell:
 	@docker run --rm -v $(PWD):/mnt koalaman/shellcheck:stable --shell=sh timemachine
 
 test: test-old
-test: test-local-default
+test: test-local-default-noslash-noslash
+test: test-local-default-noslash-slash
+test: test-local-default-slash-noslash
+test: test-local-default-slash-slash
 test: test-local-incremental
 test: test-local-no_perms
 test: test-local-no_times
 test: test-local-copy_links
 
-test-local-default:
-	./tests/01-run-local-default.sh
+test-local-default-noslash-noslash:
+	./tests/01-run-local-default-noslash-noslash.sh
+test-local-default-noslash-slash:
+	./tests/01-run-local-default-noslash-slash.sh
+test-local-default-slash-noslash:
+	./tests/01-run-local-default-slash-noslash.sh
+test-local-default-slash-slash:
+	./tests/01-run-local-default-slash-slash.sh
 test-local-incremental:
 	./tests/02-run-local-incremental.sh
 test-local-no_perms:
