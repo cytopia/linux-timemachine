@@ -15,7 +15,7 @@ FUNCPATH="${SCRIPTPATH}/.lib/functions.sh"
 ###
 RSYNC_ARGS=""
 
-print_section "01 Default"
+print_section "01 Default (slash noslash)"
 
 ### ################################################################################################
 ### ################################################################################################
@@ -74,29 +74,31 @@ sleep 2
 check_file() {
 	local file="${1}"
 	local perm="${2}"
+	destination="${DST_DIR}/current"
 
 	print_subline "Validate ${file}"
 
-	check_dst_file_is_file "${file}" "${DST_DIR}"
+	check_dst_file_is_file "${file}" "${destination}"
 
-	check_src_dst_file_exist "${file}" "${SRC_DIR}" "${DST_DIR}"
-	check_src_dst_file_equal "${file}" "${SRC_DIR}" "${DST_DIR}"
+	check_src_dst_file_exist "${file}" "${SRC_DIR}" "${destination}"
+	check_src_dst_file_equal "${file}" "${SRC_DIR}" "${destination}"
 
-	check_dst_file_perm         "${file}" "${perm}" "${perm}" "${DST_DIR}"
-	check_src_dst_file_perm     "${file}" "${SRC_DIR}" "${DST_DIR}"
-	check_src_dst_file_size     "${file}" "${SRC_DIR}" "${DST_DIR}"
-	check_src_dst_file_mod_time "${file}" "${SRC_DIR}" "${DST_DIR}"
-	check_src_dst_file_uid      "${file}" "${SRC_DIR}" "${DST_DIR}"
-	check_src_dst_file_gid      "${file}" "${SRC_DIR}" "${DST_DIR}"
+	check_dst_file_perm         "${file}" "${perm}" "${perm}" "${destination}"
+	check_src_dst_file_perm     "${file}" "${SRC_DIR}" "${destination}"
+	check_src_dst_file_size     "${file}" "${SRC_DIR}" "${destination}"
+	check_src_dst_file_mod_time "${file}" "${SRC_DIR}" "${destination}"
+	check_src_dst_file_uid      "${file}" "${SRC_DIR}" "${destination}"
+	check_src_dst_file_gid      "${file}" "${SRC_DIR}" "${destination}"
 }
 
 check_link() {
 	local link="${1}"
+	destination="${DST_DIR}/current"
 
 	print_subline "Validate ${link}"
-	check_src_dst_file_exist "${link}" "${SRC_DIR}" "${DST_DIR}"
-	check_dst_file_is_link "${link}" "${DST_DIR}"
-	check_src_dst_file_equal "${link}" "${SRC_DIR}" "${DST_DIR}"
+	check_src_dst_file_exist "${link}" "${SRC_DIR}" "${destination}"
+	check_dst_file_is_link "${link}" "${destination}"
+	check_src_dst_file_equal "${link}" "${SRC_DIR}" "${destination}"
 }
 
 
@@ -113,7 +115,7 @@ print_headline "Backup (Round 1)"
 print_subline "Run Backup"
 run_backup \
 	"${SCRIPTPATH}/../timemachine" \
-	"${SRC_DIR}" \
+	"${SRC_DIR}/" \
 	"${DST_DIR}" \
 	"${RSYNC_ARGS}" \
 	"full"
@@ -143,7 +145,7 @@ print_headline "Backup (Round 2)"
 print_subline "Run Backup"
 run_backup \
 	"${SCRIPTPATH}/../timemachine" \
-	"${SRC_DIR}" \
+	"${SRC_DIR}/" \
 	"${DST_DIR}" \
 	"${RSYNC_ARGS}" \
 	"incremental"

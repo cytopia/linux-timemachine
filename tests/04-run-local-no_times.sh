@@ -60,9 +60,11 @@ sleep 2
 
 check() {
 	local file="${1}"
+	local destination=
+	destination="${DST_DIR}/current/$(basename "${SRC_DIR}")"
 
 	print_subline "Validate ${file}"
-	check_src_dst_file_mod_time "${file}" "${SRC_DIR}" "${DST_DIR}" "0"
+	check_src_dst_file_mod_time "${file}" "${SRC_DIR}" "${destination}" "0"
 }
 
 

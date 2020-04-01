@@ -19,7 +19,7 @@ set -o pipefail
 check_src_dst_file_uid() {
 	local f="${1}"
 	local src_dir="${2}"
-	local dst_dir="${3}/current"
+	local dst_dir="${3}"
 
 	local src_uid=
 	local dst_uid=
@@ -45,7 +45,7 @@ check_src_dst_file_uid() {
 check_src_dst_file_gid() {
 	local f="${1}"
 	local src_dir="${2}"
-	local dst_dir="${3}/current"
+	local dst_dir="${3}"
 
 	local src_gid=
 	local dst_gid=
