@@ -13,14 +13,14 @@ FUNCPATH="${SCRIPTPATH}/.lib/functions.sh"
 ###
 ### GLOBALS
 ###
-SSH_USER="root"
+#SSH_USER="root"
 SSH_HOST="server"
-SSH_PORT="22"
+#SSH_PORT="22"
 
 TIMEMACHINE_ARGS=""
 RSYNC_ARGS=
 
-print_section "10 Remote (relative path)"
+print_section "11 Remote (no user && default SSH port)"
 
 ### ################################################################################################
 ### ################################################################################################
@@ -85,7 +85,7 @@ run "docker rm -f ssh-client || true" >/dev/null 2>&1
 ###
 ### Startup
 ###
-run "docker run -d --rm --name ssh-server -h server cytopia/ssh-server /usr/sbin/sshd -p ${SSH_PORT} -D"
+run "docker run -d --rm --name ssh-server -h server cytopia/ssh-server /usr/sbin/sshd -D"
 run "docker run -d --rm --name ssh-client -h client --link ssh-server -v '${SCRIPTPATH}/../timemachine:/usr/bin/timemachine' -v '${SRC_DIR}:/data' cytopia/ssh-client"
 run "sleep 5"
 
@@ -107,11 +107,10 @@ run_remote_backup \
 	"/usr/bin/timemachine" \
 	"${TIMEMACHINE_ARGS}" \
 	"/data" \
-	"${SSH_USER}@${SSH_HOST}" \
-	"backup1" \
+	"${SSH_HOST}" \
+	"/backup2" \
 	"${RSYNC_ARGS}" \
-	"full" \
-	"/root/"
+	"full"
 
 check "${FILE1_NAME}" "${FILE1_PERM}"
 check "${FILE2_NAME}" "${FILE2_PERM}"
@@ -135,11 +134,10 @@ run_remote_backup \
 	"/usr/bin/timemachine" \
 	"${TIMEMACHINE_ARGS}" \
 	"/data" \
-	"${SSH_USER}@${SSH_HOST}" \
-	"backup1" \
+	"${SSH_HOST}" \
+	"/backup2" \
 	"${RSYNC_ARGS}" \
-	"incremental" \
-	"/root/"
+	"incremental"
 
 check "${FILE1_NAME}" "${FILE1_PERM}"
 check "${FILE2_NAME}" "${FILE2_PERM}"

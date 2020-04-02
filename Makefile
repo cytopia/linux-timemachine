@@ -93,6 +93,15 @@ test: test-local-no_times
 test: test-local-copy_links
 test: test-remote-default-abs
 test: test-remote-default-rel
+test: test-remote-ssh_1111_port-nouser
+test: test-remote-ssh_1111_port-user
+test: test-remote-ssh_22_port-nouser
+test: test-remote-ssh_22_port-user
+test: test-remote-ssh_def_port-nouser
+test: test-remote-ssh_def_port-user
+test: test-remote-ssh_config-default
+test: test-remote-ssh_config-port_1111
+test: test-remote-ssh_config-port_overwrite
 
 
 test-local-default-abs-noslash-noslash:
@@ -134,6 +143,34 @@ test-remote-default-abs:
 
 test-remote-default-rel:
 	./tests/10-run-remote-default-rel.sh
+
+test-remote-ssh_1111_port-nouser:
+	./tests/11-run-remote-ssh_port_1111-nouser.sh
+
+test-remote-ssh_1111_port-user:
+	./tests/11-run-remote-ssh_port_1111-user.sh
+
+test-remote-ssh_22_port-nouser:
+	./tests/11-run-remote-ssh_port_22-nouser.sh
+
+test-remote-ssh_22_port-user:
+	./tests/11-run-remote-ssh_port_22-user.sh
+
+test-remote-ssh_def_port-nouser:
+	./tests/11-run-remote-ssh_port_def-nouser.sh
+
+test-remote-ssh_def_port-user:
+	./tests/11-run-remote-ssh_port_def-user.sh
+
+test-remote-ssh_config-default:
+	./tests/12-run-remote-ssh_config-default.sh
+
+test-remote-ssh_config-port_1111:
+	./tests/12-run-remote-ssh_config-port_1111.sh
+
+test-remote-ssh_config-port_overwrite:
+	./tests/12-run-remote-ssh_config-port_overwrite.sh
+
 
 # -------------------------------------------------------------------------------------------------
 # Helper targets
