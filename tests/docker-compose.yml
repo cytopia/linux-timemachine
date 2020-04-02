@@ -1,0 +1,21 @@
+---
+
+version: '2.3'
+services:
+
+  server:
+    hostname: server
+    build: ./docker-ssh-server
+    image: cytopia/ssh-server
+    ports:
+      - "2222:22"
+
+  client:
+    hostname: client
+    build: ./docker-ssh-client
+    image: cytopia/ssh-client
+    volumes:
+      - "../timemachine:/usr/bin/timemachine"
+      - "../tests:/tests"
+    depends_on:
+      - server

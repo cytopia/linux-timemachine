@@ -14,18 +14,20 @@ set -o pipefail
 ###
 print_section() {
 	local text="${1}"
-	printf '@%.0s' {1..120};
 	printf "\\r\\n"
-	printf '@%.0s' {1..120};
+	printf '@%.0s' {1..110};
+	printf "\\r\\n"
+	printf '@%.0s' {1..110};
 	printf "\\r\\n"
 
 	printf "@@@@@@\\r\\n"
 	printf "@@@@@@ %s\\r\\n" "${text}"
 	printf "@@@@@@\\r\\n"
 
-	printf '@%.0s' {1..120};
+	printf '@%.0s' {1..110};
 	printf "\\r\\n"
-	printf '@%.0s' {1..120};
+	printf '@%.0s' {1..110};
+	printf "\\r\\n"
 	printf "\\r\\n"
 }
 
@@ -36,6 +38,7 @@ print_section() {
 print_headline() {
 	local text="${1}"
 
+	printf "\\r\\n"
 	printf '### '
 	printf '#%.0s' {1..96};
 	printf "\\r\\n"
@@ -46,6 +49,7 @@ print_headline() {
 
 	printf '### '
 	printf '#%.0s' {1..96};
+	printf "\\r\\n"
 	printf "\\r\\n"
 }
 
