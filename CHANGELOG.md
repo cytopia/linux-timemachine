@@ -1,6 +1,19 @@
 # Changelog
 
 
+## Release v1.0
+
+#### Fixed
+- Use correct SSH port when using SSH aliases from ~/.ssh/config
+
+#### Added
+- Integration and regression tests for Linux, MacOS and remote backups over SSH
+- GitHub Actions integration
+
+#### Removed
+- Travis CI
+
+
 ## Release v0.9
 
 #### Added
