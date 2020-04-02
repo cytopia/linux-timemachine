@@ -17,10 +17,10 @@ SSH_USER="root"
 SSH_HOST="server"
 SSH_PORT="22"
 
-TIMEMACHINE_ARGS=""
+TIMEMACHINE_ARGS="--port ${SSH_PORT}"
 RSYNC_ARGS=
 
-print_section "10 Remote (relative path)"
+print_section "11 Remote (explicit user && non-standard SSH port: 22)"
 
 ### ################################################################################################
 ### ################################################################################################
@@ -108,10 +108,9 @@ run_remote_backup \
 	"${TIMEMACHINE_ARGS}" \
 	"/data" \
 	"${SSH_USER}@${SSH_HOST}" \
-	"backup1" \
+	"/backup2" \
 	"${RSYNC_ARGS}" \
-	"full" \
-	"/root/"
+	"full"
 
 check "${FILE1_NAME}" "${FILE1_PERM}"
 check "${FILE2_NAME}" "${FILE2_PERM}"
@@ -136,10 +135,9 @@ run_remote_backup \
 	"${TIMEMACHINE_ARGS}" \
 	"/data" \
 	"${SSH_USER}@${SSH_HOST}" \
-	"backup1" \
+	"/backup2" \
 	"${RSYNC_ARGS}" \
-	"incremental" \
-	"/root/"
+	"incremental"
 
 check "${FILE1_NAME}" "${FILE1_PERM}"
 check "${FILE2_NAME}" "${FILE2_PERM}"

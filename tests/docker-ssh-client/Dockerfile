@@ -32,5 +32,5 @@ RUN set -eux \
 	&& mkdir -p /root/backup1 \
 	&& mkdir -p /backup2
 
-
-CMD ["sleep", "999999999"]
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+CMD ["/docker-entrypoint.sh"]

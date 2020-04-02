@@ -15,12 +15,13 @@ FUNCPATH="${SCRIPTPATH}/.lib/functions.sh"
 ###
 SSH_USER="root"
 SSH_HOST="server"
-SSH_PORT="22"
+SSH_PORT="1111"
+SSH_ALIAS="mysshalias"
 
-TIMEMACHINE_ARGS=""
+TIMEMACHINE_ARGS="--port ${SSH_PORT}"
 RSYNC_ARGS=
 
-print_section "10 Remote (relative path)"
+print_section "12 Remote (SSH config and overwrite port)"
 
 ### ################################################################################################
 ### ################################################################################################
@@ -83,11 +84,24 @@ run "docker rm -f ssh-server || true" >/dev/null 2>&1
 run "docker rm -f ssh-client || true" >/dev/null 2>&1
 
 ###
+### Create SSH client config
+###
+SSH_CONFIG="$( create_tmp_file )"
+{
+	echo "Host ${SSH_ALIAS}";
+	echo "    HostName ${SSH_HOST}";
+	echo "    Port     50";  # This will be overwritten by the run
+	echo "    User     ${SSH_USER}";
+} > "${SSH_CONFIG}"
+
+
+###
 ### Startup
 ###
 run "docker run -d --rm --name ssh-server -h server cytopia/ssh-server /usr/sbin/sshd -p ${SSH_PORT} -D"
-run "docker run -d --rm --name ssh-client -h client --link ssh-server -v '${SCRIPTPATH}/../timemachine:/usr/bin/timemachine' -v '${SRC_DIR}:/data' cytopia/ssh-client"
+run "docker run -d --rm --name ssh-client -h client --link ssh-server -v '${SCRIPTPATH}/../timemachine:/usr/bin/timemachine' -v '${SRC_DIR}:/data' -v '${SSH_CONFIG}:/root/.ssh/config' cytopia/ssh-client"
 run "sleep 5"
+
 
 
 ### ################################################################################################
@@ -107,11 +121,10 @@ run_remote_backup \
 	"/usr/bin/timemachine" \
 	"${TIMEMACHINE_ARGS}" \
 	"/data" \
-	"${SSH_USER}@${SSH_HOST}" \
-	"backup1" \
+	"${SSH_ALIAS}" \
+	"/backup2" \
 	"${RSYNC_ARGS}" \
-	"full" \
-	"/root/"
+	"full"
 
 check "${FILE1_NAME}" "${FILE1_PERM}"
 check "${FILE2_NAME}" "${FILE2_PERM}"
@@ -135,11 +148,10 @@ run_remote_backup \
 	"/usr/bin/timemachine" \
 	"${TIMEMACHINE_ARGS}" \
 	"/data" \
-	"${SSH_USER}@${SSH_HOST}" \
-	"backup1" \
+	"${SSH_ALIAS}" \
+	"/backup2" \
 	"${RSYNC_ARGS}" \
-	"incremental" \
-	"/root/"
+	"incremental"
 
 check "${FILE1_NAME}" "${FILE1_PERM}"
 check "${FILE2_NAME}" "${FILE2_PERM}"

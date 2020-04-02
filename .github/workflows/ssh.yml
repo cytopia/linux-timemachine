@@ -35,6 +35,15 @@ jobs:
         target:
           - test-remote-default-abs
           - test-remote-default-rel
+          - test-remote-ssh_1111_port-nouser
+          - test-remote-ssh_1111_port-user
+          - test-remote-ssh_22_port-nouser
+          - test-remote-ssh_22_port-user
+          - test-remote-ssh_def_port-nouser
+          - test-remote-ssh_def_port-user
+          - test-remote-ssh_config-default
+          - test-remote-ssh_config-port_1111
+          - test-remote-ssh_config-port_overwrite
 
     name: "[SSH ${{ matrix.target }}]"
     steps:
