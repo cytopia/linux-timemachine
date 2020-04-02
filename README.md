@@ -19,13 +19,13 @@
 [![Tag](https://img.shields.io/github/tag/cytopia/linux-timemachine.svg)](https://github.com/cytopia/linux-timemachine/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-`linux-timemachine` is a tiny and stable [KISS](https://en.wikipedia.org/wiki/KISS_principle) driven and [POSIX](https://en.wikipedia.org/wiki/POSIX) compliant script that mimics the behavior of OSX's timemachine.
+`timemachine` is a tiny and stable [KISS](https://en.wikipedia.org/wiki/KISS_principle) driven and [POSIX](https://en.wikipedia.org/wiki/POSIX) compliant script that mimics the behavior of OSX's timemachine.
 It uses [rsync](https://linux.die.net/man/1/rsync) to incrementally back up your data to a different
 directory, hard disk or remote server via SSH. All operations are incremental, atomic and automatically resumable.
 
 By default it uses the rsync options: `--recursive`, `--perms`, `--owner`, `--group`, `--times` and `--links`.
 In case your target filesystem does not support any of those options or you cannot use them due
-to missing permission, you can explicitly disable them via `--no-perms`, `--no-owner`, `--no-group`, `--no-times`,  and `--copy-links`.
+to missing permission, you can explicitly disable them via `--no-perms`, `--no-owner`, `--no-group`, `--no-times`, and `--copy-links`.
 See [FAQ](#bulb-faq) for examples.
 
 **Motivation**
@@ -194,6 +194,20 @@ As decribed above this project is [KISS](https://en.wikipedia.org/wiki/KISS_prin
 Retention is a delicate topic as you want to be sure that data is removed as intended. For this there are already well-established tools that do an excellent job and have proven themselves over time: [tmpreaper](http://manpages.ubuntu.com/manpages/precise/man8/tmpreaper.8.html) and [tmpwatch](https://linux.die.net/man/8/tmpwatch).
 
 
+## :lock: Reliability
+
+[![Linting](https://github.com/cytopia/linux-timemachine/workflows/Linting/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=Linting)
+[![Linux](https://github.com/cytopia/linux-timemachine/workflows/Linux/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=Linux)
+[![MacOS](https://github.com/cytopia/linux-timemachine/workflows/MacOS/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=MacOS)
+[![SSH](https://github.com/cytopia/linux-timemachine/workflows/SSH/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=SSH)
+
+The script is written and maintained with maximum care.
+In order to retain a reliable and stable backup solution, a lot of effort goes into a vast amount of
+**[integration and regression tests](https://github.com/cytopia/linux-timemachine/actions)**.
+These tests not only give you measurable confidence, but also help new contributors to not
+accidentally introduce new or old bugs.
+
+
 ## :computer: Usage
 
 ### Available options
@@ -203,6 +217,7 @@ $ timemachine -h
 Usage: timemachine [-vdp] <source> <dest> -- [rsync opts]
        timemachine [-vdp] <source> <host>:<dest> -- [rsync opts]
        timemachine [-vdp] <source> <user>@<host>:<dest> -- [rsync opts]
+       timemachine [-vdp] <source> <ssh-alias>:<dest> -- [rsync opts]
        timemachine -V, --version
        timemachine -h, --help
 
@@ -212,13 +227,14 @@ All operations are incremental, atomic and automatically resumable.
 
 By default it uses --recursive --perms --owner --group --times --links.
 In case your target filesystem does not support any of those options, you can explicitly
-disable those options via --no-perms --no-owner --no-group --no-times  and --copy-links.
+disable those options via --no-perms --no-owner --no-group --no-times and --copy-links.
 
 Required arguments:
-  <source>              Source directory
-  <dest>                Destination directory.
-  <host>:<dest>         SSH host and destination directory
-  <user>@<host>:<dest>  SSH user, SSH host and destination directory
+  <source>              Local source directory
+  <dest>                Local destination directory.
+  <host>:<dest>         SSH host and destination directory on server
+  <user>@<host>:<dest>  SSH user, SSH host and destination directory on server
+  <ssh-alias>:<dest>    SSH alias (defined in ~/.ssh/config) and destination directory on server
 
 Options:
   -p, --port            Specify alternative SSH port for remote backups if it is not 22.
@@ -231,13 +247,13 @@ Misc Options:
 
 Examples:
   Simply back up one directory recursively
-      timemachine /home/user /mnt/bak
+      timemachine /home/user /data
   Do the same, but be verbose
-      timemachine -v /home/user /mnt/bak
-  Append rsync options and be verbose
-      timemachine -v /home/user /mnt/bak -- --archive --progress --verbose
+      timemachine -v /home/user /data
+  Append rsync options and be very verbose
+      timemachine -d /home/user /data -- --progress --verbose
   Log to file
-      timemachine -v /home/user /mnt/bak > /var/log/timemachine.log 2> /var/log/timemachine.err
+      timemachine -v /home/user /data > /var/log/timemachine.log 2> /var/log/timemachine.err
 ```
 
 ### Use with cron
@@ -256,10 +272,35 @@ Next, add the following to crontab using `crontab -e` as whichever user you inte
 0 2 * * * if [[ -e /backup/mounted ]]; then /usr/local/bin/timemachine /home/someuser /backup; fi
 ```
 
-This will cause `linux-timemachine` to run at 2AM once per day. Since `timemachine` keeps track of backups with granularity up to the hour, minute and second, you could have it run more than once per day if you want backups to run more often.
+This will cause `timemachine` to run at 2AM once per day. Since `timemachine` keeps track of backups with granularity up to the hour, minute and second, you could have it run more than once per day if you want backups to run more often.
 
 
 ## :bulb: FAQ
+
+**Should I add trailing directory slashes (`/`)?**
+
+Trailing directory slashes only matter for the source directory and will not make a difference
+if added to the destination directory.
+```bash
+# The following backs up the contents of the src directory
+$ timemachine src/ dst/
+$ tree -L 2 /dst
+.
+├── 2018-01-06__18-43-30/
+│   └── file.txt
+└── current -> 2018-01-06__18-43-30/
+```
+
+```bash
+# The following backs up the the src directory itself
+$ timemachine src dst/
+$ tree -L 3 /dst
+.
+├── 2018-01-06__18-43-30/
+│   └── src
+│       └── file.txt
+└── current -> 2018-01-06__18-43-30/
+```
 
 **How to dry-run the backup?**
 ```bash
@@ -268,14 +309,27 @@ $ timemachine src/ dst/ -- --dry-run
 
 **How to use a non-standard SSH port?**
 ```bash
-$ timemachine --port 1337 src/ user@host:path/to/backup
+$ timemachine --port 1337 src/ user@host:dst/
+```
+
+**How to use SSH aliases from `~/.ssh/config`?**
+```bash
+$ cat ~/.ssh/config
+Host my-ssh-alias
+  HostName     192.168.0.1
+  Port         1234
+  User         john
+  IdentityFile ~/.ssh/id_rsa__alternative_key
+```
+```bash
+$ timemachine src/ my-ssh-alias:dst/
 ```
 
 **How to speed up remote backups?**
 ```bash
 # With  this option, rsync compresses the file data as it is sent to the des‐
 # tination machine, which reduces the amount of  data  being  transmitted
-$ timemachine src/ user@host:path/to/backup --compress
+$ timemachine src/ user@host:dst/ --compress
 ```
 
 **How to preserve ACLs?**
@@ -295,7 +349,7 @@ $ timemachine src/ dst/ -- --no-owner --no-perms
 
 **How to disable preserving modification time?**
 ```bash
-$ timemachine src/ dst/ -- --no-owner --no-times
+$ timemachine src/ dst/ -- --no-times
 ```
 
 **How to copy the content instead of a symlink?**
@@ -324,33 +378,21 @@ $ sudo timemachine src/ dst/ -- --chown=<user>:<group>
 
 Backups are one of the most important things. We all care about our data and want it to be safe,
 so do not blindly trust scripts when it comes to backups!
-Do [review the code](https://github.com/cytopia/linux-timemachine/blob/master/timemachine),
-it is not too complex and kept as short as possible.
+Do **[review the code](https://github.com/cytopia/linux-timemachine/blob/master/timemachine)**,
+it is not too complex and kept as short as possible. Have a look at how much effort goes into the
+**[integration tests](https://github.com/cytopia/linux-timemachine/actions)** to provide measurable
+stability.
 
-Learn about [rsync](https://linux.die.net/man/1/rsync) it is a very powerful tool and you might even
-be able to just use this for backups.
+Learn about **[rsync](https://linux.die.net/man/1/rsync)** it is a very powerful tool and you might
+even be able to just use this for backups.
 
-There are many other backup tools out there that might be a better fit for your needs. Do your own
-research, look at GitHub issues, source code and try out other projects.
-
-
-## :lock: Reliability
-
-[![Linting](https://github.com/cytopia/linux-timemachine/workflows/Linting/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=Linting)
-[![Linux](https://github.com/cytopia/linux-timemachine/workflows/Linux/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=Linux)
-[![MacOS](https://github.com/cytopia/linux-timemachine/workflows/MacOS/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=MacOS)
-[![SSH](https://github.com/cytopia/linux-timemachine/workflows/SSH/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=SSH)
-
-The script is written and maintained with maximum care.
-In order to retain a reliable and stable backup solution, a lot of effort goes into a huge amount of
-**[integration and regression tests](https://github.com/cytopia/linux-timemachine/actions)**.
-These tests not only give you measurable confidence, but also help new contributors to not
-accidentally introduce new or old bugs.
+There are many other backup solutions out there that might be a better fit for your needs. Do your
+own research, look at GitHub issues, source code, integration tests and try them out as well.
 
 
 ## :octocat: Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) to help to make this project more awesome.
+See **[Contributing guidelines](CONTRIBUTING.md)** to help to improve this project.
 
 
 ## :page_facing_up: License
