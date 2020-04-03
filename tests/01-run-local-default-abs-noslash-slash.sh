@@ -103,6 +103,50 @@ check_link() {
 	check_src_dst_file_equal "${link}" "${SRC_DIR}" "${destination}"
 }
 
+check_dir() {
+	local src="${1}"
+	local dst="${2}"
+	local destination=
+	destination="${dst}/current/$(basename "${src}")"
+
+	check_dir_size "${src}" "${destination}"
+}
+
+check_backup() {
+	local src="${1}"
+	local dst="${2}"
+	local backup1="${3}"
+	local backup2="${4}"
+
+	local src_actual_size
+	local dst_actual_size
+	local backup1_actual_size
+	local backup2_actual_size
+
+	print_subline "Check incremental Backup"
+
+	backup1_actual_size="$( get_dir_size_without_hardlinks "${backup1}" "/$(basename "${src}")" )"
+	backup2_actual_size="$( get_dir_size_without_hardlinks "${backup2}" "/$(basename "${src}")" )"
+	if [ "${backup1_actual_size}" -eq "${backup2_actual_size}" ]; then
+		printf "[TEST] [FAIL] Incremental: inital backup (%s) and incremental backup (%s) disk sizes are equal\\r\\n" "${backup1_actual_size}" "${backup2_actual_size}"
+		exit 1
+	fi
+	printf "[TEST] [OK]   Incremental: inital backup (%s) and incremental backup (%s) disk sizes differ\\r\\n" "${backup1_actual_size}" "${backup2_actual_size}"
+
+
+	print_subline "Check incremental Backup after deleting initial full backup"
+
+	run "rm -rf '${backup1}'"
+	src_actual_size="$( get_dir_size_with_hardlinks "${src}" )"
+	dst_actual_size="$( get_dir_size_without_hardlinks "${dst}/current/" "/$(basename "${src}")" )"
+
+	if [ "${src_actual_size}" -ne "${dst_actual_size}" ]; then
+		printf "[TEST] [FAIL] Incremental Backup: src-dir(%s) size is not equal to dst-dir(%s)\\r\\n" "${src_actual_size}" "${dst_actual_size}"
+		exit 1
+	fi
+	printf "[TEST] [OK]   Incremental Backup: src-dir(%s) size is equal to dst-dir(%s)\\r\\n" "${src_actual_size}" "${dst_actual_size}"
+}
+
 
 ### ################################################################################################
 ### ################################################################################################
@@ -122,9 +166,6 @@ run_backup \
 	"${RSYNC_ARGS}" \
 	"full"
 
-# TODO: check for .inprogress
-# TODO: add --append-verify (and check for rsync version >= 3)
-
 check_file "${FILE1_NAME}" "${FILE1_PERM}"
 check_file "${FILE2_NAME}" "${FILE2_PERM}"
 check_file "${FILE3_NAME}" "${FILE3_PERM}"
@@ -132,6 +173,10 @@ check_file "${FILE3_NAME}" "${FILE3_PERM}"
 check_link "${LINK1_NAME}"
 check_link "${LINK2_NAME}"
 check_link "${LINK3_NAME}"
+
+check_dir "${SRC_DIR}" "${DST_DIR}"
+
+BACKUP_PATH_1="$( cd "${DST_DIR}/current/" && pwd -P )"
 
 
 ### ################################################################################################
@@ -159,3 +204,24 @@ check_file "${FILE3_NAME}" "${FILE3_PERM}"
 check_link "${LINK1_NAME}"
 check_link "${LINK2_NAME}"
 check_link "${LINK3_NAME}"
+
+check_dir "${SRC_DIR}" "${DST_DIR}"
+
+BACKUP_PATH_2="$( cd "${DST_DIR}/current/" && pwd -P )"
+
+
+### ################################################################################################
+### ################################################################################################
+###
+### Validate Backups
+###
+### ################################################################################################
+### ################################################################################################
+
+print_headline "Validate Backups"
+
+check_backup \
+	"${SRC_DIR}" \
+	"${DST_DIR}" \
+	"${BACKUP_PATH_1}" \
+	"${BACKUP_PATH_2}"
