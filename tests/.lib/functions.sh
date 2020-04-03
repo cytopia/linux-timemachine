@@ -12,6 +12,8 @@ SCRIPT_PATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 # shellcheck disable=SC1090
 . "${SCRIPT_PATH}/.lib/run-backup.sh"
 # shellcheck disable=SC1090
+. "${SCRIPT_PATH}/.lib/dir-size.sh"
+# shellcheck disable=SC1090
 . "${SCRIPT_PATH}/.lib/file-exist.sh"
 # shellcheck disable=SC1090
 . "${SCRIPT_PATH}/.lib/file-permissions.sh"
