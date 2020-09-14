@@ -312,7 +312,7 @@ RSYNC_PARTIAL=".partial"
 PID=".pid"
 
 # Check process overlaps
-if test "$WITHOUT_OVERLAPS" == true; then
+if [ "$WITHOUT_OVERLAPS" = true ]; then
   if path_exists "${DEST}/${PID}"; then
     logerr "Backup is in progress. Skipping..."
     exit 1
