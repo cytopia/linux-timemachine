@@ -18,6 +18,7 @@ MY_DATE="2020-04-02"
 # Default command line arguments
 VERBOSE=
 PORT=
+WITHOUT_OVERLAPS=
 
 # Default variables
 SSH_ARGS="-oStrictHostKeyChecking=no -oLogLevel=QUIET -q"
@@ -139,6 +140,20 @@ link_exists() {
 	eval "${cmd}" >/dev/null
 }
 
+path_exists() {
+  path="${1}"
+
+  if is_remote "${path}"; then
+    ssh_part="$( echo "${path}" | awk -F':' '{print $1}' )"
+		file_part="$( echo "${path}" | awk -F':' '{print $2}' )"
+		cmd="ssh ${SSH_ARGS} ${ssh_part} 'test -e \"${file_part}\"'"
+  else
+      cmd="test -e '${path}'"
+  fi
+  logdebug "${cmd}"
+  eval "${cmd}" >/dev/null
+}
+
 ###
 ### Remove local or remote file
 ###
@@ -223,6 +238,9 @@ while getopts :vdp:hV-: opt; do
 			PORT="${1}"
 			SSH_ARGS="${SSH_ARGS} -p ${PORT}"
 			;;
+	  o | without-overlaps)
+	    WITHOUT_OVERLAPS=true
+	    ;;
 		v | verbose)
 			if [ "${VERBOSE}" != "debug" ]; then
 				VERBOSE="verbose"
@@ -240,8 +258,6 @@ while getopts :vdp:hV-: opt; do
 	esac
 	shift
 done
-
-
 
 ################################################################################
 # Entrypoint: Validate cmd args
@@ -266,8 +282,6 @@ if ! command -v rsync >/dev/null 2>&1; then
 	logerr "rsync binary not found but required."
 	exit 1
 fi
-
-
 
 ################################################################################
 # Main Entrypoint
@@ -294,6 +308,19 @@ BACKUP_LATEST="current"
 # in order to speed up a possible resume for the next run
 RSYNC_PARTIAL=".partial"
 
+# Pid file to prevent overlapped backups
+PID=".pid"
+
+# Check process overlaps
+if test "$WITHOUT_OVERLAPS" == true; then
+  if path_exists "${DEST}/${PID}"; then
+    logerr "Backup is in progress. Skipping..."
+    exit 1
+  fi
+
+  echo $$ > "${DEST}/${PID}"
+  trap 'unlink "${DEST}/${PID}"' EXIT
+fi
 
 ###
 ### 1/3 Incremental, resumable and atomic rsync backup
