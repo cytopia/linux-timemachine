@@ -1,6 +1,13 @@
 # Changelog
 
 
+## Release v1.1
+
+#### Added
+- [#60](https://github.com/cytopia/linux-timemachine/issues/60) Allow remote source
+- Allow to specify SSH key (`-i` or `--identity`) for remote connections
+
+
 ## Release v1.0
 
 #### Fixed
