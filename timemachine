@@ -12,12 +12,13 @@ MY_DESC="OSX-like timemachine cli script for Linux and BSD (and even OSX)"
 MY_PROJ="https://github.com/cytopia/linux-timemachine"
 MY_AUTH="cytopia"
 MY_MAIL="cytopia@everythingcli.org"
-MY_VERS="1.0"
-MY_DATE="2020-04-02"
+MY_VERS="1.1"
+MY_DATE="2021-01-30"
 
 # Default command line arguments
 VERBOSE=
 PORT=
+KEY=
 
 # Default variables
 SSH_ARGS="-oStrictHostKeyChecking=no -oLogLevel=QUIET -q"
@@ -29,38 +30,53 @@ SSH_ARGS="-oStrictHostKeyChecking=no -oLogLevel=QUIET -q"
 ################################################################################
 
 print_usage() {
-	echo "Usage: ${MY_NAME} [-vdp] <source> <dest> -- [rsync opts]"
-	echo "       ${MY_NAME} [-vdp] <source> <host>:<dest> -- [rsync opts]"
-	echo "       ${MY_NAME} [-vdp] <source> <user>@<host>:<dest> -- [rsync opts]"
-	echo "       ${MY_NAME} [-vdp] <source> <ssh-alias>:<dest> -- [rsync opts]"
+	echo "Usage: ${MY_NAME} [-vd]   <source> <dest> -- [rsync opts]"
+	echo
+
+	echo "       ${MY_NAME} [-vdpi] <source> <host>:<dest>        -- [rsync opts]"
+	echo "       ${MY_NAME} [-vdpi] <source> <user>@<host>:<dest> -- [rsync opts]"
+	echo "       ${MY_NAME} [-vdpi] <source> <ssh-alias>:<dest>   -- [rsync opts]"
+	echo
+
+	echo "       ${MY_NAME} [-vdpi] <host>:<source>        <dest> -- [rsync opts]"
+	echo "       ${MY_NAME} [-vdpi] <user>@<host>:<source> <dest> -- [rsync opts]"
+	echo "       ${MY_NAME} [-vdpi] <ssh-alias>:<source>   <dest> -- [rsync opts]"
+	echo
+
 	echo "       ${MY_NAME} -V, --version"
 	echo "       ${MY_NAME} -h, --help"
 	echo
+
 	echo "This shell script mimics the behavior of OSX's timemachine."
 	echo "It uses rsync to incrementally back up your data to a different directory or remote server via SSH."
 	echo "All operations are incremental, atomic and automatically resumable."
 	echo
+
 	echo "By default it uses --recursive --perms --owner --group --times --links."
 	echo "In case your target filesystem does not support any of those options, you can explicitly"
 	echo "disable those options via --no-perms --no-owner --no-group --no-times and --copy-links."
 	echo
+
 	echo "Required arguments:"
 	echo "  <source>              Local source directory"
 	echo "  <dest>                Local destination directory."
-	echo "  <host>:<dest>         SSH host and destination directory on server"
-	echo "  <user>@<host>:<dest>  SSH user, SSH host and destination directory on server"
-	echo "  <ssh-alias>:<dest>    SSH alias (defined in ~/.ssh/config) and destination directory on server"
-
+	echo "  <host>:<dest>         SSH host and source/destination directory on server"
+	echo "  <user>@<host>:<dest>  SSH user, SSH host and source/destination directory on server"
+	echo "  <ssh-alias>:<dest>    SSH alias (defined in ~/.ssh/config) and source/destination directory on server"
 	echo
+
 	echo "Options:"
 	echo "  -p, --port            Specify alternative SSH port for remote backups if it is not 22."
+	echo "  -i, --identity        Specify path to SSH key."
 	echo "  -v, --verbose         Be verbose."
 	echo "  -d, --debug           Be even more verbose."
 	echo
+
 	echo "Misc Options:"
 	echo "  -V, --version         Print version information and exit"
 	echo "  -h, --help            Show this help screen"
 	echo
+
 	echo "Examples:"
 	echo "  Simply back up one directory recursively"
 	echo "      timemachine /home/user /data"
@@ -70,6 +86,10 @@ print_usage() {
 	echo "      timemachine -d /home/user /data -- --progress --verbose"
 	echo "  Log to file"
 	echo "      timemachine -v /home/user /data > /var/log/timemachine.log 2> /var/log/timemachine.err"
+	echo
+
+	echo "Documentation:"
+	echo "  View more examples at: ${MY_PROJ}"
 }
 
 print_version() {
@@ -200,7 +220,7 @@ link_directory() {
 ################################################################################
 
 # Parse input args with getopts
-while getopts :vdp:hV-: opt; do
+while getopts :vdpi:hV-: opt; do
 	# ----- long options
 	if [ "${opt}" = "-" ]; then
 		opt=${OPTARG}
@@ -222,6 +242,11 @@ while getopts :vdp:hV-: opt; do
 			shift
 			PORT="${1}"
 			SSH_ARGS="${SSH_ARGS} -p ${PORT}"
+			;;
+		i | identityity)
+			shift
+			KEY="${1}"
+			SSH_ARGS="${SSH_ARGS} -i ${KEY}"
 			;;
 		v | verbose)
 			if [ "${VERBOSE}" != "debug" ]; then
@@ -252,11 +277,17 @@ if [ "${#}" -lt "2" ]; then
 	exit 1
 fi
 
-if [ ! -d "${1}" ] && [ ! -f "${1}" ]; then
+if is_remote "${1}"; then
+	if is_remote "${2}"; then
+		logerr "Source and Target cannot both be remote locations."
+		exit 1
+	fi
+fi
+
+if ! dir_exists "${1}"; then
 	logerr "Source directory does not exist: '${1}'. See -h for help."
 	exit 1
 fi
-
 if ! dir_exists "${2}"; then
 	logerr "Target directory does not exist: '${2}'. See -h for help."
 	exit 1
