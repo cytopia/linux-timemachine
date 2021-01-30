@@ -214,10 +214,16 @@ accidentally introduce new or old bugs.
 ```
 $ timemachine -h
 
-Usage: timemachine [-vdp] <source> <dest> -- [rsync opts]
-       timemachine [-vdp] <source> <host>:<dest> -- [rsync opts]
-       timemachine [-vdp] <source> <user>@<host>:<dest> -- [rsync opts]
-       timemachine [-vdp] <source> <ssh-alias>:<dest> -- [rsync opts]
+Usage: timemachine [-vd]   <source> <dest> -- [rsync opts]
+
+       timemachine [-vdpi] <source> <host>:<dest>        -- [rsync opts]
+       timemachine [-vdpi] <source> <user>@<host>:<dest> -- [rsync opts]
+       timemachine [-vdpi] <source> <ssh-alias>:<dest>   -- [rsync opts]
+
+       timemachine [-vdpi] <host>:<source>        <dest> -- [rsync opts]
+       timemachine [-vdpi] <user>@<host>:<source> <dest> -- [rsync opts]
+       timemachine [-vdpi] <ssh-alias>:<source>   <dest> -- [rsync opts]
+
        timemachine -V, --version
        timemachine -h, --help
 
@@ -232,12 +238,13 @@ disable those options via --no-perms --no-owner --no-group --no-times and --copy
 Required arguments:
   <source>              Local source directory
   <dest>                Local destination directory.
-  <host>:<dest>         SSH host and destination directory on server
-  <user>@<host>:<dest>  SSH user, SSH host and destination directory on server
-  <ssh-alias>:<dest>    SSH alias (defined in ~/.ssh/config) and destination directory on server
+  <host>:<dest>         SSH host and source/destination directory on server
+  <user>@<host>:<dest>  SSH user, SSH host and source/destination directory on server
+  <ssh-alias>:<dest>    SSH alias (defined in ~/.ssh/config) and source/destination directory on server
 
 Options:
   -p, --port            Specify alternative SSH port for remote backups if it is not 22.
+  -i, --identity        Specify path to SSH key.
   -v, --verbose         Be verbose.
   -d, --debug           Be even more verbose.
 
@@ -254,6 +261,9 @@ Examples:
       timemachine -d /home/user /data -- --progress --verbose
   Log to file
       timemachine -v /home/user /data > /var/log/timemachine.log 2> /var/log/timemachine.err
+
+Documentation:
+  View more examples at: https://github.com/cytopia/linux-timemachine
 ```
 
 ### Use with cron
