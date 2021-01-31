@@ -243,7 +243,7 @@ while getopts :vdpi:hV-: opt; do
 			PORT="${1}"
 			SSH_ARGS="${SSH_ARGS} -p ${PORT}"
 			;;
-		i | identityity)
+		i | identity)
 			shift
 			KEY="${1}"
 			SSH_ARGS="${SSH_ARGS} -i ${KEY}"

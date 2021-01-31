@@ -1,6 +1,12 @@
 # Changelog
 
 
+## Release v1.2
+
+#### Fixed
+- Fixed `identityity` typo to `identity` in option parsing loop.
+
+
 ## Release v1.1
 
 #### Added
