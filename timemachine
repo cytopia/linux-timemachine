@@ -12,8 +12,8 @@ MY_DESC="OSX-like timemachine cli script for Linux and BSD (and even OSX)"
 MY_PROJ="https://github.com/cytopia/linux-timemachine"
 MY_AUTH="cytopia"
 MY_MAIL="cytopia@everythingcli.org"
-MY_VERS="1.1"
-MY_DATE="2021-01-30"
+MY_VERS="1.1.1"
+MY_DATE="2021-03-31"
 
 # Default command line arguments
 VERBOSE=
@@ -23,7 +23,18 @@ KEY=
 # Default variables
 SSH_ARGS="-oStrictHostKeyChecking=no -oLogLevel=QUIET -q"
 
-
+# Application Path variables for security, by full pathing an attacker can't
+# swap in their own versions of commands.
+DATE=/bin/date
+GREP=/bin/grep
+RM=/bin/rm
+MV=/bin/mv
+LN=/bin/ln
+ECHO=/bin/echo
+AWK=/usr/bin/awk
+SSH=/usr/bin/ssh
+RSYNC=/usr/bin/rsync
+TEST=/usr/bin/test
 
 ################################################################################
 # Functions
@@ -103,26 +114,26 @@ print_version() {
 logdebug() {
 	# Only log to stdout when verbose is turned on
 	if [ "${VERBOSE}" = "debug" ]; then
-		echo "$(date +'%Y-%m-%d %H:%M:%S') ${MY_NAME}: [DEBUG] ${*}"
+		echo "$(${DATE} +'%Y-%m-%d %H:%M:%S') ${MY_NAME}: [DEBUG] ${*}"
 	fi
 }
 
 logmsg() {
 	# Only log to stdout when verbose/debug is turned on
 	if [ "${VERBOSE}" = "verbose" ] || [ "${VERBOSE}" = "debug" ]; then
-		echo "$(date +'%Y-%m-%d %H:%M:%S') ${MY_NAME}: [INFO]  ${*}"
+		echo "$(${DATE} +'%Y-%m-%d %H:%M:%S') ${MY_NAME}: [INFO]  ${*}"
 	fi
 }
 
 logerr() {
-	echo "$(date +'%Y-%m-%d %H:%M:%S') ${MY_NAME}: [ERROR] ${*}" >&2
+	echo "$(${DATE} +'%Y-%m-%d %H:%M:%S') ${MY_NAME}: [ERROR] ${*}" >&2
 }
 
 ###
 ### Check if the destination is a remote server
 ###
 is_remote() {
-	echo "${1}" | grep -E '.+:.+' >/dev/null
+	echo "${1}" | $GREP -E '.+:.+' >/dev/null
 }
 
 ###
@@ -132,11 +143,11 @@ dir_exists() {
 	directory="${1}"
 
 	if is_remote "${directory}"; then
-		ssh_part="$( echo "${directory}" | awk -F':' '{print $1}' )"
-		dir_part="$( echo "${directory}" | awk -F':' '{print $2}' )"
-		cmd="ssh ${SSH_ARGS} ${ssh_part} 'test -d \"${dir_part}\"'"
+		ssh_part="$( $ECHO "${directory}" | $AWK -F':' '{print $1}' )"
+		dir_part="$( $ECHO "${directory}" | $AWK -F':' '{print $2}' )"
+		cmd="$SSH ${SSH_ARGS} ${ssh_part} '$TEST -d \"${dir_part}\"'"
 	else
-		cmd="test -d '${directory}'"
+		cmd="$TEST -d '${directory}'"
 	fi
 	logdebug "${cmd}"
 	eval "${cmd}" >/dev/null
@@ -149,11 +160,11 @@ link_exists() {
 	directory="${1}"
 
 	if is_remote "${directory}"; then
-		ssh_part="$( echo "${directory}" | awk -F':' '{print $1}' )"
-		dir_part="$( echo "${directory}" | awk -F':' '{print $2}' )"
-		cmd="ssh ${SSH_ARGS} ${ssh_part} 'test -L \"${dir_part}\"'"
+		ssh_part="$( $ECHO "${directory}" | $AWK -F':' '{print $1}' )"
+		dir_part="$( $ECHO "${directory}" | $AWK -F':' '{print $2}' )"
+		cmd="$SSH ${SSH_ARGS} ${ssh_part} '$TEST -L \"${dir_part}\"'"
 	else
-		cmd="test -L '${directory}'"
+		cmd="$TEST -L '${directory}'"
 	fi
 	logdebug "${cmd}"
 	eval "${cmd}" >/dev/null
@@ -166,11 +177,11 @@ remove_file() {
 	file="${1}"
 
 	if is_remote "${file}"; then
-		ssh_part="$( echo "${file}" | awk -F':' '{print $1}' )"
-		file_part="$( echo "${file}" | awk -F':' '{print $2}' )"
-		cmd="ssh ${SSH_ARGS} ${ssh_part} 'rm \"${file_part}\"'"
+		ssh_part="$( $ECHO "${file}" | $AWK -F':' '{print $1}' )"
+		file_part="$( $ECHO "${file}" | $AWK -F':' '{print $2}' )"
+		cmd="$SSH ${SSH_ARGS} ${ssh_part} '$RM \"${file_part}\"'"
 	else
-		cmd="rm '${file}'"
+		cmd="$RM '${file}'"
 	fi
 	logdebug "${cmd}"
 	eval "${cmd}" >/dev/null
@@ -184,12 +195,12 @@ rename_directory() {
 	to="${2}"
 
 	if is_remote "${from}"; then
-		ssh_part="$( echo "${from}" | awk -F':' '{print $1}' )"
-		dir_from_part="$( echo "${from}" | awk -F':' '{print $2}' )"
-		dir_to_part="$( echo "${to}" | awk -F':' '{print $2}' )"
-		cmd="ssh ${SSH_ARGS} ${ssh_part} 'mv \"${dir_from_part}\" \"${dir_to_part}\"'"
+		ssh_part="$( $ECHO "${from}" | $AWK -F':' '{print $1}' )"
+		dir_from_part="$( $ECHO "${from}" | $AWK -F':' '{print $2}' )"
+		dir_to_part="$( $ECHO "${to}" | $AWK -F':' '{print $2}' )"
+		cmd="$SSH ${SSH_ARGS} ${ssh_part} '$MV \"${dir_from_part}\" \"${dir_to_part}\"'"
 	else
-		cmd="mv '${from}' '${to}'"
+		cmd="$MV '${from}' '${to}'"
 	fi
 	logdebug "${cmd}"
 	eval "${cmd}" >/dev/null
@@ -203,11 +214,11 @@ link_directory() {
 	lnk="${2}"
 
 	if is_remote "${lnk}"; then
-		ssh_part="$( echo "${lnk}" | awk -F':' '{print $1}' )"
-		lnk_part="$( echo "${lnk}" | awk -F':' '{print $2}' )"
-		cmd="ssh ${SSH_ARGS} ${ssh_part} 'ln -s \"${dir}\" \"${lnk_part}\"'"
+		ssh_part="$( $ECHO "${lnk}" | $AWK -F':' '{print $1}' )"
+		lnk_part="$( $ECHO "${lnk}" | $AWK -F':' '{print $2}' )"
+		cmd="$SSH ${SSH_ARGS} ${ssh_part} '$LN -s \"${dir}\" \"${lnk_part}\"'"
 	else
-		cmd="ln -s '${dir}' '${lnk}'"
+		cmd="$LN -s '${dir}' '${lnk}'"
 	fi
 	logdebug "${cmd}"
 	eval "${cmd}" >/dev/null
@@ -293,7 +304,7 @@ if ! dir_exists "${2}"; then
 	exit 1
 fi
 
-if ! command -v rsync >/dev/null 2>&1; then
+if ! command -v $RSYNC >/dev/null 2>&1; then
 	logerr "rsync binary not found but required."
 	exit 1
 fi
@@ -312,7 +323,7 @@ shift 2
 [ "${#}" -ge 1 ] && [ "${1}" = "--" ] && shift
 
 # Name of the backup directory
-BACKUP="$( date '+%Y-%m-%d__%H-%M-%S' )"
+BACKUP="$( $DATE '+%Y-%m-%d__%H-%M-%S' )"
 
 # Name of the backup directory which is currently in progress (incomplete)
 # Used for atomic backups
@@ -342,8 +353,8 @@ if link_exists "${DEST}/${BACKUP_LATEST}"; then
 	logmsg "Starting incremental backup"
 	logmsg "\$ rsync $* ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
 
-	rsync \
-		-e "ssh ${SSH_ARGS}" \
+	$RSYNC \
+		-e "$SSH ${SSH_ARGS}" \
 		--recursive \
 		--perms \
 		--owner \
@@ -359,10 +370,10 @@ if link_exists "${DEST}/${BACKUP_LATEST}"; then
 else
 	BTYPE="full"
 	logmsg "Starting full backup"
-	logmsg "\$ rsync $* ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
+	logmsg "\$ $RSYNC $* ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
 
-	rsync \
-		-e "ssh ${SSH_ARGS}" \
+	$RSYNC \
+		-e "$SSH ${SSH_ARGS}" \
 		--recursive \
 		--perms \
 		--owner \
