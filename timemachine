@@ -1,6 +1,7 @@
 #!/bin/sh -eu
 #
 # https://serverfault.com/questions/834994/rsync-only-keep-10-backup-folders
+export PATH=/bin:/usr/bin
 
 ################################################################################
 # Variables
@@ -12,8 +13,8 @@ MY_DESC="OSX-like timemachine cli script for Linux and BSD (and even OSX)"
 MY_PROJ="https://github.com/cytopia/linux-timemachine"
 MY_AUTH="cytopia"
 MY_MAIL="cytopia@everythingcli.org"
-MY_VERS="1.1"
-MY_DATE="2021-01-30"
+MY_VERS="1.3"
+MY_DATE="2021-04-08"
 
 # Default command line arguments
 VERBOSE=
