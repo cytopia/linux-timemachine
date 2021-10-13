@@ -221,7 +221,7 @@ link_directory() {
 ################################################################################
 
 # Parse input args with getopts
-while getopts :vdpi:hV-: opt; do
+while getopts :vdp:i:hV-: opt; do
 	# ----- long options
 	if [ "${opt}" = "-" ]; then
 		opt=${OPTARG}
@@ -240,13 +240,11 @@ while getopts :vdpi:hV-: opt; do
 			;;
 		# ----- Options
 		p | port)
-			shift
-			PORT="${1}"
+			PORT="${OPTARG}"
 			SSH_ARGS="${SSH_ARGS} -p ${PORT}"
 			;;
 		i | identity)
-			shift
-			KEY="${1}"
+			KEY="${OPTARG}"
 			SSH_ARGS="${SSH_ARGS} -i ${KEY}"
 			;;
 		v | verbose)
@@ -264,10 +262,9 @@ while getopts :vdpi:hV-: opt; do
 			exit 2
 			;;
 	esac
-	shift
 done
 
-
+shift $((OPTIND-1))
 
 ################################################################################
 # Entrypoint: Validate cmd args
