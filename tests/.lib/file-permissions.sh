@@ -182,11 +182,12 @@ get_default_dest_file_perm() {
 get_file_perm() {
 	local file_path="${1}"
 	local out
+	file_path="$( printf "%q" "${file_path}" )"
 
 	if [ "$(uname)" = "Linux" ]; then
-		out="$( run "stat -c '%a' '${file_path}'" "1" "stderr" )"
+		out="$( run "stat -c '%a' ${file_path}" "1" "stderr" )"
 	else
-		out="$( run "stat -f '%A' '${file_path}'" "1" "stderr" )"
+		out="$( run "stat -f '%A' ${file_path}" "1" "stderr" )"
 	fi
 	out="${out//\"/}"
 	>&2 echo "${out}"

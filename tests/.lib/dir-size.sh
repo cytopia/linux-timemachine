@@ -10,8 +10,10 @@ set -o pipefail
 # -------------------------------------------------------------------------------------------------
 
 check_dir_size() {
-	local src="${1}"
-	local dst="${2}"
+	local src=
+	local dst=
+	src="$( printf "%q" "${1}" )"
+	dst="$( printf "%q" "${2}" )"
 
 	src_size="$( get_dir_size_with_hardlinks "${src}" )"
 	dst_size="$( get_dir_size_with_hardlinks "${dst}" )"
@@ -36,9 +38,9 @@ check_dir_size() {
 ### @param abs_path  directory
 ###
 get_dir_size_with_hardlinks() {
-	local dir="${1}"
+	local dir=
 	local size=
-
+	dir="$( printf "%q" "${1}" )"
 
 	size="$( run "cd '${dir}' && du -d0 '.' | awk '{print \$1}'" "1" "stderr" )"
 	echo "${size}"
@@ -51,23 +53,25 @@ get_dir_size_with_hardlinks() {
 ### @param abs_path  directory
 ###
 get_dir_size_without_hardlinks() {
-	local dir="${1}"
+	local dir=
+	dir="$( printf "%q" "${1}" )"
 	local suffix="${2:-}"
 	local actual_path=
 	local current_dir_name=
 	local parent_dir_path=
 	local size=
 
+
 	# Return the actual path (in case we're in a symlink)
-	actual_path="$( run "cd '${dir}' && pwd -P" "1" "stderr" )"
+	actual_path="$( printf "%q" "$( run "cd ${dir} && pwd -P" "1" "stderr" )" )"
 
 	# Get only the name of the current directory
-	current_dir_name="$( run "basename '${actual_path}'" "1" "stderr" )"
+	current_dir_name="$( printf "%q" "$( run "basename ${actual_path}" "1" "stderr" )" )"
 
 	# Get the parent directory path
-	parent_dir_path="$( run "dirname '${actual_path}'" "1" "stderr" )"
+	parent_dir_path="$( printf "%q" "$( run "dirname ${actual_path}" "1" "stderr" )" )"
 
 
-	size="$( run "cd '${parent_dir_path}' && du -d2 2>/dev/null | grep -E '${current_dir_name}${suffix}\$' | head -1 | awk '{print \$1}'" "1" "stderr" )"
+	size="$( run "cd ${parent_dir_path} && du -d2 2>/dev/null | grep -E '${current_dir_name}${suffix}\$' | head -1 | awk '{print \$1}'" "1" "stderr" )"
 	echo "${size}"
 }

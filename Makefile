@@ -91,6 +91,7 @@ test: test-local-default-rel-slash-slash
 test: test-local-no_perms
 test: test-local-no_times
 test: test-local-copy_links
+test: test-local-crazy-filename-chars
 test: test-remote-default-abs
 test: test-remote-default-rel
 test: test-remote-ssh_1111_port-nouser
@@ -137,6 +138,8 @@ test-local-no_times:
 test-local-copy_links:
 	./tests/05-run-local-copy_links.sh
 
+test-local-crazy-filename-chars:
+	./tests/06-run-local-crazy-filename-chars.sh
 
 test-remote-default-abs:
 	./tests/10-run-remote-default-abs.sh

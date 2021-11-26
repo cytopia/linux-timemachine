@@ -20,13 +20,18 @@ check_src_dst_file_exist() {
 	local f="${1}"
 	local src_dir="${2}"
 	local dst_dir="${3}"
+	local src=
+	local dst=
 
-	if [ ! -f "${src_dir}/${f}" ]; then
-		printf "[TEST] [FAIL] Source file does not exist: %s\\r\\n" "${src_dir}/${f}"
+	src="$( printf "%q" "${src_dir}" )/$( printf "%q" "${f}" )"
+	dst="$( printf "%q" "${dst_dir}" )/$( printf "%q" "${f}" )"
+
+	if [ ! -f "${src}" ]; then
+		printf "[TEST] [FAIL] Source file does not exist: %s\\r\\n" "${src}"
 		exit 1
 	fi
-	if [ ! -f "${dst_dir}/${f}" ]; then
-		printf "[TEST] [FAIL] Destination file does not exist: %s\\r\\n" "${dst_dir}/${f}"
+	if [ ! -f "${dst}" ]; then
+		printf "[TEST] [FAIL] Destination file does not exist: %s\\r\\n" "${dst}"
 		exit 1
 	fi
 	printf "[TEST] [OK]   Source and Destination files exist\\r\\n"
@@ -42,13 +47,16 @@ check_src_dst_file_exist() {
 check_dst_file_is_file() {
 	local f="${1}"
 	local dst_dir="${2}"
+	local dst=
 
-	if [ -d "${dst_dir}/${f}" ]; then
-		printf "[TEST] [FAIL] Destination file is a directory: %s\\r\\n" "${dst_dir}/${f}"
+	dst="$( printf "%q" "${dst_dir}" )/$( printf "%q" "${f}" )"
+
+	if [ -d "${dst}" ]; then
+		printf "[TEST] [FAIL] Destination file is a directory: %s\\r\\n" "${dst}"
 		exit 1
 	fi
-	if [ -L "${dst_dir}/${f}" ]; then
-		printf "[TEST] [FAIL] Destination file is a symlink: %s\\r\\n" "${dst_dir}/${f}"
+	if [ -L "${dst}" ]; then
+		printf "[TEST] [FAIL] Destination file is a symlink: %s\\r\\n" "${dst}"
 		exit 1
 	fi
 	printf "[TEST] [OK]   Destination file is a regular file\\r\\n"
@@ -64,16 +72,19 @@ check_dst_file_is_file() {
 check_dst_file_is_link() {
 	local f="${1}"
 	local dst_dir="${2}"
+	local dst=
 
-	if [ -d "${dst_dir}/${f}" ]; then
-		printf "[TEST] [FAIL] Destination file is a directory: %s\\r\\n" "${dst_dir}/${f}"
+	dst="$( printf "%q" "${dst_dir}" )/$( printf "%q" "${f}" )"
+
+	if [ -d "${dst}" ]; then
+		printf "[TEST] [FAIL] Destination file is a directory: %s\\r\\n" "${dst}"
 		exit 1
 	fi
-	if [ -L "${dst_dir}/${f}" ]; then
+	if [ -L "${dst}" ]; then
 		printf "[TEST] [OK]   Destination file is a symlink\\r\\n"
 		return
 	fi
-	printf "[TEST] [FAIL] Destination file is not a symlink: %s\\r\\n" "${dst_dir}/${f}"
+	printf "[TEST] [FAIL] Destination file is not a symlink: %s\\r\\n" "${dst}"
 	exit 1
 }
 
@@ -89,9 +100,14 @@ check_src_dst_file_equal() {
 	local f="${1}"
 	local src_dir="${2}"
 	local dst_dir="${3}"
+	local src=
+	local dst=
 
-	if ! run "cmp -s '${src_dir}/${f}' '${dst_dir}/${f}'"; then
-		printf "[TEST] [FAIL] Source (%s) and dest (%s) files differ\\r\\n" "${src_dir}/${f}" "${dst_dir}/${f}"
+	src="$( printf "%q" "${src_dir}" )/$( printf "%q" "${f}" )"
+	dst="$( printf "%q" "${dst_dir}" )/$( printf "%q" "${f}" )"
+
+	if ! run "cmp -s ${src} ${dst}"; then
+		printf "[TEST] [FAIL] Source (%s) and dest (%s) files differ\\r\\n" "${src}" "${dst}"
 		exit 1
 	else
 		printf "[TEST] [OK]   Source and dest files are equal\\r\\n"
