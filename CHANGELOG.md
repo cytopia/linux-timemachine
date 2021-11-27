@@ -12,7 +12,6 @@
 
 #### Fixed
 - Fixed #69 special chars in source directory
-- Fixed `identityity` typo to `identity` in option parsing loop.
 
 
 ## Release v1.2
