@@ -11,6 +11,7 @@
 - CI: check for special chars in file names
 
 #### Fixed
+- Fixed #69 special chars in source directory
 - Fixed `identityity` typo to `identity` in option parsing loop.
 
 
