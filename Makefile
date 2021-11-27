@@ -141,6 +141,9 @@ test-local-copy_links:
 test-local-crazy-filename-chars:
 	./tests/06-run-local-crazy-filename-chars.sh
 
+test-local-crazy-pathname-chars:
+	./tests/06-run-local-crazy-pathname-chars.sh
+
 test-remote-default-abs:
 	./tests/10-run-remote-default-abs.sh
 

@@ -45,6 +45,7 @@ jobs:
           - test-local-no_times
           - test-local-copy_links
           - test-local-crazy-filename-chars
+          - test-local-crazy-pathname-chars
 
     name: "[MacOS ${{ matrix.target }}]"
     steps:

@@ -74,7 +74,7 @@ check_dst_file_is_link() {
 	local dst_dir="${2}"
 	local dst=
 
-	dst="$( printf "%q" "${dst_dir}" )/$( printf "%q" "${f}" )"
+	dst="$( printf "%q" "${dst_dir}/${f}" )"
 
 	if [ -d "${dst}" ]; then
 		printf "[TEST] [FAIL] Destination file is a directory: %s\\r\\n" "${dst}"

@@ -1,6 +1,19 @@
 # Changelog
 
 
+## Release v1.3.1
+
+#### Changed
+- Switch to semver for versioning
+- Change interpreter from POSIX sh to bash
+
+#### Added
+- CI: check for special chars in file names
+
+#### Fixed
+- Fixed `identityity` typo to `identity` in option parsing loop.
+
+
 ## Release v1.2
 
 #### Fixed

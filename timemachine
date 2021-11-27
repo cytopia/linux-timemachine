@@ -1,4 +1,9 @@
-#!/bin/sh -eu
+#!/usr/bin/env bash
+
+set -e
+set -u
+set -o pipefail
+
 #
 # https://serverfault.com/questions/834994/rsync-only-keep-10-backup-folders
 export PATH=/bin:/usr/bin
@@ -13,8 +18,8 @@ MY_DESC="OSX-like timemachine cli script for Linux and BSD (and even OSX)"
 MY_PROJ="https://github.com/cytopia/linux-timemachine"
 MY_AUTH="cytopia"
 MY_MAIL="cytopia@everythingcli.org"
-MY_VERS="1.3"
-MY_DATE="2021-04-08"
+MY_VERS="1.3.1"
+MY_DATE="2021-11-27"
 
 # Default command line arguments
 VERBOSE=
@@ -137,7 +142,7 @@ dir_exists() {
 		dir_part="$( echo "${directory}" | awk -F':' '{print $2}' )"
 		cmd="ssh ${SSH_ARGS} ${ssh_part} 'test -d \"${dir_part}\"'"
 	else
-		cmd="test -d '${directory}'"
+		cmd="test -d ${directory}"
 	fi
 	logdebug "${cmd}"
 	eval "${cmd}" >/dev/null
@@ -154,7 +159,7 @@ link_exists() {
 		dir_part="$( echo "${directory}" | awk -F':' '{print $2}' )"
 		cmd="ssh ${SSH_ARGS} ${ssh_part} 'test -L \"${dir_part}\"'"
 	else
-		cmd="test -L '${directory}'"
+		cmd="test -L ${directory}"
 	fi
 	logdebug "${cmd}"
 	eval "${cmd}" >/dev/null
@@ -171,7 +176,7 @@ remove_file() {
 		file_part="$( echo "${file}" | awk -F':' '{print $2}' )"
 		cmd="ssh ${SSH_ARGS} ${ssh_part} 'rm \"${file_part}\"'"
 	else
-		cmd="rm '${file}'"
+		cmd="rm ${file}"
 	fi
 	logdebug "${cmd}"
 	eval "${cmd}" >/dev/null
@@ -190,7 +195,7 @@ rename_directory() {
 		dir_to_part="$( echo "${to}" | awk -F':' '{print $2}' )"
 		cmd="ssh ${SSH_ARGS} ${ssh_part} 'mv \"${dir_from_part}\" \"${dir_to_part}\"'"
 	else
-		cmd="mv '${from}' '${to}'"
+		cmd="mv ${from} ${to}"
 	fi
 	logdebug "${cmd}"
 	eval "${cmd}" >/dev/null
@@ -208,7 +213,7 @@ link_directory() {
 		lnk_part="$( echo "${lnk}" | awk -F':' '{print $2}' )"
 		cmd="ssh ${SSH_ARGS} ${ssh_part} 'ln -s \"${dir}\" \"${lnk_part}\"'"
 	else
-		cmd="ln -s '${dir}' '${lnk}'"
+		cmd="ln -s ${dir} ${lnk}"
 	fi
 	logdebug "${cmd}"
 	eval "${cmd}" >/dev/null
@@ -278,18 +283,18 @@ if [ "${#}" -lt "2" ]; then
 	exit 1
 fi
 
-if is_remote "${1}"; then
-	if is_remote "${2}"; then
+if is_remote "$( printf "%q" "${1}" )"; then
+	if is_remote "$( printf "%q" "${2}" )"; then
 		logerr "Source and Target cannot both be remote locations."
 		exit 1
 	fi
 fi
 
-if ! dir_exists "${1}"; then
+if ! dir_exists "$( printf "%q" "${1}" )"; then
 	logerr "Source directory does not exist: '${1}'. See -h for help."
 	exit 1
 fi
-if ! dir_exists "${2}"; then
+if ! dir_exists "$( printf "%q" "${2}" )"; then
 	logerr "Target directory does not exist: '${2}'. See -h for help."
 	exit 1
 fi
@@ -307,8 +312,8 @@ fi
 
 # Get arguments and remove them afterwards to have ${@} contain
 # all additional rsync options
-SRC="${1}"
-DEST="${2}"
+SRC="$( printf "%q" "${1}" )"
+DEST="$( printf "%q" "${2}" )"
 shift 2
 [ "${#}" -ge 1 ] && [ "${1}" = "--" ] && shift
 
@@ -343,8 +348,8 @@ if link_exists "${DEST}/${BACKUP_LATEST}"; then
 	logmsg "Starting incremental backup"
 	logmsg "\$ rsync $* ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
 
-	rsync \
-		-e "ssh ${SSH_ARGS}" \
+	eval "rsync \
+		-e \"ssh ${SSH_ARGS}\" \
 		--recursive \
 		--perms \
 		--owner \
@@ -353,17 +358,17 @@ if link_exists "${DEST}/${BACKUP_LATEST}"; then
 		--links \
 		--delete \
 		--delete-excluded \
-		--partial-dir="${RSYNC_PARTIAL}" \
-		--link-dest="../${BACKUP_LATEST}" \
-		"$@" \
-		"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
+		--partial-dir=${RSYNC_PARTIAL} \
+		--link-dest=../${BACKUP_LATEST} \
+		$* \
+		${SRC} ${DEST}/${BACKUP_INPROGRESS}"
 else
 	BTYPE="full"
 	logmsg "Starting full backup"
 	logmsg "\$ rsync $* ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
 
-	rsync \
-		-e "ssh ${SSH_ARGS}" \
+	eval "rsync \
+		-e \"ssh ${SSH_ARGS}\" \
 		--recursive \
 		--perms \
 		--owner \
@@ -372,9 +377,9 @@ else
 		--links \
 		--delete \
 		--delete-excluded \
-		--partial-dir="${RSYNC_PARTIAL}" \
-		"$@" \
-		"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
+		--partial-dir=${RSYNC_PARTIAL} \
+		$* \
+		${SRC} ${DEST}/${BACKUP_INPROGRESS}"
 fi
 
 
