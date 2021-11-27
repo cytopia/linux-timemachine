@@ -92,6 +92,7 @@ test: test-local-no_perms
 test: test-local-no_times
 test: test-local-copy_links
 test: test-local-crazy-filename-chars
+test: test-local-crazy-pathname-chars
 test: test-remote-default-abs
 test: test-remote-default-rel
 test: test-remote-ssh_1111_port-nouser
