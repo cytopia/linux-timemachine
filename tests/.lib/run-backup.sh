@@ -23,6 +23,10 @@ run_backup() {
 	local out
 	local err
 
+	timemachine_path="$( printf "%q" "${timemachine_path}" )"
+	src_dir="$( printf "%q" "${src_dir}" )"
+	dst_dir="$( printf "%q" "${dst_dir}" )"
+
 	out="$( create_tmp_file )"
 	err="$( create_tmp_file )"
 
@@ -34,7 +38,7 @@ run_backup() {
 	###
 	### Run and check for failure
 	###
-	if ! run "cd \"${pwd}\" && \"${timemachine_path}\" -d \"${src_dir}\" \"${dst_dir}\" ${rsync_args} > \"${out}\" 2> \"${err}\""; then
+	if ! run "cd \"${pwd}\" && ${timemachine_path} -d ${src_dir} ${dst_dir} ${rsync_args} > \"${out}\" 2> \"${err}\""; then
 		printf "[TEST] [FAIL] Run failed.\\r\\n"
 		cat "${out}"
 		cat "${err}"
@@ -71,7 +75,7 @@ run_backup() {
 	###
 	### Check for existing latest symlink
 	###
-	if [ ! -L "${pwd}/${dst_dir}/current" ]; then
+	if ! eval "test -L ${pwd}/${dst_dir}/current"; then
 		printf "[TEST] [FAIL] No latest symlink available: %s\\r\\n" "${pwd}/${dst_dir}/current"
 		rm "${out}"
 		rm "${err}"
@@ -82,7 +86,7 @@ run_backup() {
 	###
 	### Check partial backup .inprogress directory
 	###
-	if [ -d "${pwd}/${dst_dir}/current/.inprogress" ]; then
+	if eval "test -d ${pwd}/${dst_dir}/current/.inprogress"; then
 		printf "[TEST] [FAIL] Undeleted '.inprogress' directory found: %s\\r\\n" "${pwd}/${dst_dir}/current/.inprogress"
 		rm "${out}"
 		rm "${err}"
