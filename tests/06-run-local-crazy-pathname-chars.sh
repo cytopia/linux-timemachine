@@ -31,9 +31,9 @@ print_headline "Creating files and directories"
 ### Create source and target dir
 ###
 echo "# Create SRC_DIR"
-SRC_DIR="$( create_tmp_dir "1" "" " \"\\ \` \\# \$src'" )"
+SRC_DIR="$( create_tmp_dir "1" "" " \"\\ \` \\# \$统一码-src'" )"
 echo "# Create DST_DIR"
-DST_DIR="$( create_tmp_dir "1" "" " '\\\" \` \\# \$dst" )"
+DST_DIR="$( create_tmp_dir "1" "" " '\\\" \` \\# \$统一码-dst" )"
 
 FILE1_NAME="file 1.txt"
 FILE2_NAME="file'2.txt"
