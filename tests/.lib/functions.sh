@@ -143,21 +143,14 @@ create_tmp_dir() {
 	###
 	### Create absolute path tmp dir
 	###
-	if ! command -v mktemp >/dev/null 2>&1; then
-		i=0
-		local prefix="/tmp/timemachine"
-		while [ -d "${prefix}-${i}${suffix}" ] || [ -f "${prefix}-${i}${suffix}" ]; do
-			i="$(( i + 1 ))"
-		done
-		tmp_dir="${prefix}-${i}${suffix}"
-		mkdir -p "${tmp_dir}" >/dev/null
-	else
-		if [ -z "${suffix}" ]; then
-			tmp_dir="$( mktemp -d )"
-		else
-			tmp_dir="$( mktemp -d --suffix="${suffix}" )"
-		fi
-	fi
-
-	printf "%s" "${tmp_dir}" | sed 's|/*$||'
+	# NOTE: MacOS does not have 'mktemp --suffix', so we're using our own version
+	i=0
+	local prefix="/tmp/timemachine"
+	while [ -d "${prefix}-${i}${suffix}" ] || [ -f "${prefix}-${i}${suffix}" ]; do
+		i="$(( i + 1 ))"
+	done
+	tmp_dir="${prefix}-${i}${suffix}"
+	run "mkdir -p ${tmp_dir}" "1" "stderr" "stderr"
+	echo "${tmp_dir}"
+	return
 }
