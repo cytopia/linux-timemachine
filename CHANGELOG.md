@@ -5,7 +5,6 @@
 
 #### Changed
 - Switch to semver for versioning
-- Change interpreter from POSIX sh to bash
 - Wrap rsync into eval to escape paths
 
 #### Added

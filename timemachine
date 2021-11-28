@@ -1,9 +1,4 @@
-#!/usr/bin/env bash
-
-set -e
-set -u
-set -o pipefail
-
+#!/bin/sh -eu
 #
 # https://serverfault.com/questions/834994/rsync-only-keep-10-backup-folders
 export PATH=/bin:/usr/bin
@@ -122,6 +117,16 @@ logmsg() {
 
 logerr() {
 	echo "$(date +'%Y-%m-%d %H:%M:%S') ${MY_NAME}: [ERROR] ${*}" >&2
+}
+
+###
+### POSIX compliant path escape (like printf "%q" in bash)
+###
+escape_path() {
+	# https://mullikine.github.io/posts/missing-posix-shell-functions-cmd-and-myeval/
+	for var in "$@"; do
+		printf "'%s' " "$(printf %s "$var" | sed "s/'/'\\\\''/g")";
+	done | sed 's/ $//'
 }
 
 ###
@@ -294,18 +299,18 @@ if [ "${#}" -lt "2" ]; then
 	exit 1
 fi
 
-if is_remote "$( printf "%q" "${1}" )"; then
-	if is_remote "$( printf "%q" "${2}" )"; then
+if is_remote "$( escape_path "${1}" )"; then
+	if is_remote "$( escape_path "${2}" )"; then
 		logerr "Source and Target cannot both be remote locations."
 		exit 1
 	fi
 fi
 
-if ! dir_exists "$( printf "%q" "${1}" )"; then
+if ! dir_exists "$( escape_path "${1}" )"; then
 	logerr "Source directory does not exist: '${1}'. See -h for help."
 	exit 1
 fi
-if ! dir_exists "$( printf "%q" "${2}" )"; then
+if ! dir_exists "$( escape_path "${2}" )"; then
 	logerr "Target directory does not exist: '${2}'. See -h for help."
 	exit 1
 fi
@@ -323,8 +328,8 @@ fi
 
 # Get arguments and remove them afterwards to have ${@} contain
 # all additional rsync options
-SRC="$( printf "%q" "${1}" )"
-DEST="$( printf "%q" "${2}" )"
+SRC="$( escape_path "${1}" )"
+DEST="$( escape_path "${2}" )"
 shift 2
 [ "${#}" -ge 1 ] && [ "${1}" = "--" ] && shift
 
