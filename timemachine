@@ -348,8 +348,8 @@ if link_exists "${DEST}/${BACKUP_LATEST}"; then
 	logmsg "Starting incremental backup"
 	logmsg "\$ rsync $* ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
 
-	rsync \
-		-e "ssh ${SSH_ARGS}" \
+	eval "rsync \
+		-e 'ssh ${SSH_ARGS}' \
 		--recursive \
 		--perms \
 		--owner \
@@ -360,15 +360,15 @@ if link_exists "${DEST}/${BACKUP_LATEST}"; then
 		--delete-excluded \
 		--partial-dir=${RSYNC_PARTIAL} \
 		--link-dest=../${BACKUP_LATEST} \
-		"$@" \
-		"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
+		$* \
+		${SRC} ${DEST}/${BACKUP_INPROGRESS}"
 else
 	BTYPE="full"
 	logmsg "Starting full backup"
 	logmsg "\$ rsync $* ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
 
-	rsync \
-		-e "ssh ${SSH_ARGS}" \
+	eval "rsync \
+		-e 'ssh ${SSH_ARGS}' \
 		--recursive \
 		--perms \
 		--owner \
@@ -378,8 +378,8 @@ else
 		--delete \
 		--delete-excluded \
 		--partial-dir=${RSYNC_PARTIAL} \
-		"$@" \
-		"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
+		$* \
+		${SRC} ${DEST}/${BACKUP_INPROGRESS}"
 fi
 
 
