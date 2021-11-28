@@ -13,21 +13,26 @@ set -o pipefail
 ### Create file
 ###
 create_file() {
-	local src_dir=
-	local file_name=
+	local src_dir="${1}"
+	local file_name="${2}"
+	local sub_dir=
 	local file_path=
 	local file_size="${3}"
 	local file_perms="${4}"
 
-	src_dir="$( printf "%q" "${1}" )"
-	file_name="$( printf "%q" "${2}" )"
+	file_name="$( printf "%q" "${file_name}" )"
+	sub_dir="$( printf "%q" "$( eval "dirname ${file_name}" )" )"
 	file_path="${src_dir}/${file_name}"
 
-	# Create directory if it doesn't exist
-	if [ ! -d "$( dirname "${file_path}" )" ]; then
-		run "mkdir -p $( dirname "${file_path}" )"
+	if ! eval "test -d ${src_dir}"; then
+		printf "No such directpry: %s\\n" "${src_dir}"
+		exit 1
 	fi
-
+	# Create sub-directory if it doesn't exist
+	if [ "${sub_dir}" != "." ]; then
+		printf "# Create basedir: %s\\n" "${sub_dir}"
+		run "mkdir -p ${src_dir}/${sub_dir}"
+	fi
 	if [ "$(uname)" = "Linux" ]; then
 		run "dd if=/dev/zero of=${file_path} bs=1M count=${file_size} 2>/dev/null"
 	else
@@ -41,20 +46,22 @@ create_file() {
 ### Create symlink
 ###
 create_link() {
-	local src_dir=
-	local link_name=
-	local link_from=
-	local link_path=
+	local src_dir="${1}"
+	local link_name="${2}"
+	local sub_dir=
+	local link_from="${3}"
 
-	src_dir="$( printf "%q" "${1}" )"
-	link_name="$( printf "%q" "${2}" )"
-	link_from="$( printf "%q" "${3}" )"
-	link_path="${src_dir}/${link_name}"
+	link_name="$( printf "%q" "${link_name}" )"
+	sub_dir="$( printf "%q" "$( eval "dirname ${link_name}" )" )"
 
-	# Create directory if it doesn't exist
-	if [ ! -d "$( dirname "${link_path}" )" ]; then
-		run "mkdir -p $( dirname "${link_path}" )"
+	if ! eval "test -d ${src_dir}"; then
+		printf "No such directpry: %s\\n" "${src_dir}"
+		exit 1
 	fi
-
+	# Create sub-directory if it doesn't exist
+	if [ "${sub_dir}" != "." ]; then
+		printf "# Create basedir: %s\\n" "${sub_dir}"
+		run "mkdir -p ${src_dir}/${sub_dir}"
+	fi
 	run "cd ${src_dir} && ln -s ${link_from} ${link_name}"
 }

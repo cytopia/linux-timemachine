@@ -135,7 +135,7 @@ create_tmp_dir() {
 			i="$(( i + 1 ))"
 		done
 		tmp_dir=".tmp/${i}${suffix}"
-		run "cd '${pwd}' && mkdir -p '${tmp_dir}'" "1" "stderr" "stderr"
+		run "cd ${pwd} && mkdir -p ${tmp_dir}" "1" "stderr" "stderr"
 		echo "${tmp_dir}"
 		return
 	fi
@@ -149,7 +149,7 @@ create_tmp_dir() {
 	while [ -d "${prefix}-${i}${suffix}" ] || [ -f "${prefix}-${i}${suffix}" ]; do
 		i="$(( i + 1 ))"
 	done
-	tmp_dir="${prefix}-${i}${suffix}"
+	tmp_dir="$( printf "%q" "${prefix}-${i}${suffix}" )"
 	run "mkdir -p ${tmp_dir}" "1" "stderr" "stderr"
 	echo "${tmp_dir}"
 	return

@@ -24,8 +24,8 @@ run_backup() {
 	local err
 
 	timemachine_path="$( printf "%q" "${timemachine_path}" )"
-	src_dir="$( printf "%q" "${src_dir}" )"
-	dst_dir="$( printf "%q" "${dst_dir}" )"
+	#src_dir="$( printf "%q" "${src_dir}" )"
+	#dst_dir="$( printf "%q" "${dst_dir}" )"
 
 	out="$( create_tmp_file )"
 	err="$( create_tmp_file )"

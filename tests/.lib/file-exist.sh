@@ -103,8 +103,8 @@ check_src_dst_file_equal() {
 	local src=
 	local dst=
 
-	src="$( printf "%q" "${src_dir}" )/$( printf "%q" "${f}" )"
-	dst="$( printf "%q" "${dst_dir}" )/$( printf "%q" "${f}" )"
+	src="${src_dir}/$( printf "%q" "${f}" )"
+	dst="${dst_dir}/$( printf "%q" "${f}" )"
 
 	if ! run "cmp -s ${src} ${dst}"; then
 		printf "[TEST] [FAIL] Source (%s) and dest (%s) files differ\\r\\n" "${src}" "${dst}"

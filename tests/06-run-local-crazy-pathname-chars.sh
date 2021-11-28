@@ -30,8 +30,10 @@ print_headline "Creating files and directories"
 ###
 ### Create source and target dir
 ###
-SRC_DIR="$( create_tmp_dir "1" "" " '\\\"" )"
-DST_DIR="$( create_tmp_dir "1" "" " '\\\"" )"
+echo "# Create SRC_DIR"
+SRC_DIR="$( create_tmp_dir "1" "" " \"\\ \` \\# \$src'" )"
+echo "# Create DST_DIR"
+DST_DIR="$( create_tmp_dir "1" "" " '\\\" \` \\# \$dst" )"
 
 FILE1_NAME="file 1.txt"
 FILE2_NAME="file'2.txt"
@@ -54,13 +56,28 @@ FILE8_PERM="607"
 ###
 ### Create source files
 ###
+printf "# Create FILE1: %s/%s\\n" "${SRC_DIR}" "${FILE1_NAME}"
 create_file "${SRC_DIR}" "${FILE1_NAME}" "2" "${FILE1_PERM}"
+
+printf "# Create FILE2: %s/%s\\n" "${SRC_DIR}" "${FILE2_NAME}"
 create_file "${SRC_DIR}" "${FILE2_NAME}" "5" "${FILE2_PERM}"
+
+printf "# Create FILE3: %s/%s\\n" "${SRC_DIR}" "${FILE3_NAME}"
 create_file "${SRC_DIR}" "${FILE3_NAME}" "1" "${FILE3_PERM}"
+
+printf "# Create FILE4: %s/%s\\n" "${SRC_DIR}" "${FILE4_NAME}"
 create_file "${SRC_DIR}" "${FILE4_NAME}" "1" "${FILE4_PERM}"
+
+printf "# Create FILE5: %s/%s\\n" "${SRC_DIR}" "${FILE5_NAME}"
 create_file "${SRC_DIR}" "${FILE5_NAME}" "1" "${FILE5_PERM}"
+
+printf "# Create FILE6: %s/%s\\n" "${SRC_DIR}" "${FILE6_NAME}"
 create_file "${SRC_DIR}" "${FILE6_NAME}" "1" "${FILE6_PERM}"
+
+printf "# Create FILE7: %s/%s\\n" "${SRC_DIR}" "${FILE7_NAME}"
 create_file "${SRC_DIR}" "${FILE7_NAME}" "1" "${FILE7_PERM}"
+
+printf "# Create FILE8: %s/%s\\n" "${SRC_DIR}" "${FILE8_NAME}"
 create_file "${SRC_DIR}" "${FILE8_NAME}" "1" "${FILE8_PERM}"
 
 
