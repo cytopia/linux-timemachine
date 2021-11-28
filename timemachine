@@ -19,7 +19,7 @@ MY_PROJ="https://github.com/cytopia/linux-timemachine"
 MY_AUTH="cytopia"
 MY_MAIL="cytopia@everythingcli.org"
 MY_VERS="1.3.1"
-MY_DATE="2021-11-27"
+MY_DATE="2021-11-28"
 
 # Default command line arguments
 VERBOSE=
@@ -226,50 +226,61 @@ link_directory() {
 ################################################################################
 
 # Parse input args with getopts
-while getopts :vdpi:hV-: opt; do
-	# ----- long options
-	if [ "${opt}" = "-" ]; then
-		opt=${OPTARG}
-		[ -z "${opt}" ] && break	# "--" terminates argument processing
-	fi
-	# shellcheck disable=SC2214
-	case "${opt}" in
-		# ---- Help / version
-		V | version)
+while test "${#}" -gt 0; do
+	case "${1}" in
+		# ---------- Help / version ----------
+		-V | --version)
 			print_version
 			exit
 			;;
-		h | help)
+		-h | --help)
 			print_usage
 			exit
 			;;
-		# ----- Options
-		p | port)
-			shift
-			PORT="${1}"
-			SSH_ARGS="${SSH_ARGS} -p ${PORT}"
-			;;
-		i | identity)
-			shift
-			KEY="${1}"
-			SSH_ARGS="${SSH_ARGS} -i ${KEY}"
-			;;
-		v | verbose)
+		# ---------- Verbosity ----------
+		-v | --verbose)
 			if [ "${VERBOSE}" != "debug" ]; then
 				VERBOSE="verbose"
 			fi
+			shift
 			;;
-		d | debug)
+		-d | --debug)
 			VERBOSE="debug"
+			shift
 			;;
-		\?)	logerr "Unknown option -${OPTARG}, see -h for help."
-			exit 2
+		# ---------- Options ----------
+		-p | --port)
+			if [ -z "${2:-}" ]; then
+				logerr "${1} requires an argument, see -h for help."
+				exit 2
+			fi
+			shift
+			PORT="${1}"
+			SSH_ARGS="${SSH_ARGS} -p ${PORT}"
+			shift
 			;;
-		*)	logerr "Unknown option --${opt}, see -h for help."
-			exit 2
+		-i | --identity)
+			if [ -z "${2:-}" ]; then
+				logerr "${1} requires an argument, see -h for help."
+				exit 2
+			fi
+			shift
+			KEY="${1}"
+			SSH_ARGS="${SSH_ARGS} -i ${KEY}"
+			shift
 			;;
+		-*)
+			if [ "${1}" != "--" ]; then
+				logerr "Unknown option ${1}, see -h for help."
+				exit 2
+			fi
+			shift
+			;;
+		*)
+			# No more options available, so break and evaluate
+			# positional arguments.
+			break
 	esac
-	shift
 done
 
 

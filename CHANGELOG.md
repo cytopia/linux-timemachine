@@ -13,6 +13,7 @@
 
 #### Fixed
 - Fixed #69 special chars in source directory
+- Fixed #67 argument parsing
 
 
 ## Release v1.2
