@@ -44,6 +44,7 @@ jobs:
           - test-remote-ssh_config-default
           - test-remote-ssh_config-port_1111
           - test-remote-ssh_config-port_overwrite
+          - test-remote-ssh_crazy-pathname-chars
 
     name: "[SSH ${{ matrix.target }}]"
     steps:
