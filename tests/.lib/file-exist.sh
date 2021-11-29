@@ -106,7 +106,7 @@ check_src_dst_file_equal() {
 	src="${src_dir}/$( printf "%q" "${f}" )"
 	dst="${dst_dir}/$( printf "%q" "${f}" )"
 
-	if ! run "cmp -s ${src} ${dst}"; then
+	if ! run "cmp ${src} ${dst}"; then
 		printf "[TEST] [FAIL] Source (%s) and dest (%s) files differ\\r\\n" "${src}" "${dst}"
 		exit 1
 	else
