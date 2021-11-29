@@ -428,7 +428,6 @@ if link_exists "${DEST}/${BACKUP_LATEST}"; then
 		$* \
 		$( escape_path "${SRC}" ) $( escape_path "${DEST}/${BACKUP_INPROGRESS}" )"
 
-	logmsg "\$ $(printf "%s" "${cmd}" | sed 's/\t//g' )"
 	eval "${cmd}"
 else
 	BTYPE="full"
@@ -449,7 +448,7 @@ else
 		--partial-dir=${RSYNC_PARTIAL} \
 		$* \
 		$( escape_path "${SRC}" ) $( escape_path "${DEST}/${BACKUP_INPROGRESS}" )"
-		logmsg "\$ $(printf "%s" "${cmd}" | sed 's/\t//g' )"
+
 	eval "${cmd}"
 fi
 
