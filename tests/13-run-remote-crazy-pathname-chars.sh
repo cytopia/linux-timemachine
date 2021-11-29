@@ -36,8 +36,8 @@ print_headline "Creating files and directories"
 ### Create source dir
 ###
 SRC_DIR="$( create_tmp_dir )"
-DOCKER_SRC_DIR="$( printf "%q" "/ \"\\ \` \\# \$统一码-src'" )"
-DOCKER_DST_DIR="$( printf "%q" "/ \"\\ \` \\# \$统一码-dst'" )"
+DOCKER_SRC_DIR="/ \"\\ \` \\# \$统一码-src"
+DOCKER_DST_DIR="/ \"\\ \` \\# \$统一码-dst"
 
 FILE1_NAME="file1.txt"
 FILE2_NAME="file2.txt"
@@ -88,7 +88,7 @@ run "docker rm -f ssh-client || true" >/dev/null 2>&1
 ### Startup
 ###
 run "docker run -d --rm --name ssh-server -h server cytopia/ssh-server /usr/sbin/sshd -D"
-run "docker run -d --rm --name ssh-client -h client --link ssh-server -v '${SCRIPTPATH}/../timemachine:/usr/bin/timemachine' -v ${SRC_DIR}:/${DOCKER_SRC_DIR} cytopia/ssh-client"
+run "docker run -d --rm --name ssh-client -h client --link ssh-server -v '${SCRIPTPATH}/../timemachine:/usr/bin/timemachine' -v ${SRC_DIR}:/$( printf "%q" "${DOCKER_SRC_DIR}" ) cytopia/ssh-client"
 run "sleep 5"
 
 

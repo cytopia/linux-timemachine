@@ -1,4 +1,6 @@
-#!/bin/sh -eu
+#!/bin/bash -eu
+
+set -o pipefail
 #
 # https://serverfault.com/questions/834994/rsync-only-keep-10-backup-folders
 export PATH=/bin:/usr/bin
@@ -27,7 +29,7 @@ SSH_ARGS="-oStrictHostKeyChecking=no -oLogLevel=QUIET -q"
 
 
 ################################################################################
-# Functions
+# Info Functions
 ################################################################################
 
 print_usage() {
@@ -101,6 +103,12 @@ print_version() {
 	echo "${MY_PROJ}"
 }
 
+
+
+################################################################################
+# Logging Functions
+################################################################################
+
 logdebug() {
 	# Only log to stdout when verbose is turned on
 	if [ "${VERBOSE}" = "debug" ]; then
@@ -119,21 +127,44 @@ logerr() {
 	echo "$(date +'%Y-%m-%d %H:%M:%S') ${MY_NAME}: [ERROR] ${*}" >&2
 }
 
+
+
+################################################################################
+# Backup Functions
+################################################################################
+
 ###
 ### POSIX compliant path escape (like printf "%q" in bash)
 ###
 escape_path() {
+	printf "%q" "${1}"
+	return
 	# https://mullikine.github.io/posts/missing-posix-shell-functions-cmd-and-myeval/
 	for var in "$@"; do
+		#printf "%s" "$(printf %s "$var" | sed "s/'/'\\\\''/g")";
 		printf "'%s' " "$(printf %s "$var" | sed "s/'/'\\\\''/g")";
 	done | sed 's/ $//'
+}
+
+###
+### Ensure to remove single quotes from start and end
+###
+unquote_path() {
+	echo "${1}" | sed "s/^'//g" | sed "s/'\$//g"
 }
 
 ###
 ### Check if the destination is a remote server
 ###
 is_remote() {
-	echo "${1}" | grep -E '.+:.+' >/dev/null
+	logdebug "Checking if dir is remote (SSH) or local"
+	if echo "${1}" | grep -E '.+:.+' >/dev/null; then
+		logdebug "Dir is remote: ${1}"
+		return 0
+	else
+		logdebug "Dir is local: ${1}"
+		return 1
+	fi
 }
 
 ###
@@ -142,14 +173,17 @@ is_remote() {
 dir_exists() {
 	directory="${1}"
 
+	logdebug "Checking if dir exists: ${1}"
 	if is_remote "${directory}"; then
 		ssh_part="$( echo "${directory}" | awk -F':' '{print $1}' )"
 		dir_part="$( echo "${directory}" | awk -F':' '{print $2}' )"
-		cmd="ssh ${SSH_ARGS} ${ssh_part} 'test -d \"${dir_part}\"'"
+		dir_part="$( escape_path "${dir_part}" )"
+		cmd="ssh ${SSH_ARGS} ${ssh_part} test -d ${dir_part}"
 	else
+		directory="$( escape_path "${directory}" )"
 		cmd="test -d ${directory}"
 	fi
-	logdebug "${cmd}"
+	logdebug "\$ ${cmd}"
 	eval "${cmd}" >/dev/null
 }
 
@@ -159,14 +193,17 @@ dir_exists() {
 link_exists() {
 	directory="${1}"
 
+	logdebug "Checking if link exists: ${1}"
 	if is_remote "${directory}"; then
 		ssh_part="$( echo "${directory}" | awk -F':' '{print $1}' )"
 		dir_part="$( echo "${directory}" | awk -F':' '{print $2}' )"
-		cmd="ssh ${SSH_ARGS} ${ssh_part} 'test -L \"${dir_part}\"'"
+		dir_part="$( escape_path "${dir_part}" )"
+		cmd="ssh ${SSH_ARGS} ${ssh_part} test -L ${dir_part}"
 	else
+		directory="$( escape_path "${directory}" )"
 		cmd="test -L ${directory}"
 	fi
-	logdebug "${cmd}"
+	logdebug "\$ ${cmd}"
 	eval "${cmd}" >/dev/null
 }
 
@@ -176,14 +213,17 @@ link_exists() {
 remove_file() {
 	file="${1}"
 
+	logdebug "Removing file: ${1}"
 	if is_remote "${file}"; then
 		ssh_part="$( echo "${file}" | awk -F':' '{print $1}' )"
 		file_part="$( echo "${file}" | awk -F':' '{print $2}' )"
-		cmd="ssh ${SSH_ARGS} ${ssh_part} 'rm \"${file_part}\"'"
+		file_part="$( escape_path "${file_part}" )"
+		cmd="ssh ${SSH_ARGS} ${ssh_part} rm ${file_part}"
 	else
+		file="$( escape_path "${file}" )"
 		cmd="rm ${file}"
 	fi
-	logdebug "${cmd}"
+	logdebug "\$ ${cmd}"
 	eval "${cmd}" >/dev/null
 }
 
@@ -198,11 +238,15 @@ rename_directory() {
 		ssh_part="$( echo "${from}" | awk -F':' '{print $1}' )"
 		dir_from_part="$( echo "${from}" | awk -F':' '{print $2}' )"
 		dir_to_part="$( echo "${to}" | awk -F':' '{print $2}' )"
-		cmd="ssh ${SSH_ARGS} ${ssh_part} 'mv \"${dir_from_part}\" \"${dir_to_part}\"'"
+		dir_from_part="$( escape_path "${dir_from_part}" )"
+		dir_to_part="$( escape_path "${dir_to_part}" )"
+		cmd="ssh ${SSH_ARGS} ${ssh_part} mv ${dir_from_part} ${dir_to_part}"
 	else
+		from="$( escape_path "${from}" )"
+		to="$( escape_path "${to}" )"
 		cmd="mv ${from} ${to}"
 	fi
-	logdebug "${cmd}"
+	logdebug "\$ ${cmd}"
 	eval "${cmd}" >/dev/null
 }
 
@@ -216,11 +260,15 @@ link_directory() {
 	if is_remote "${lnk}"; then
 		ssh_part="$( echo "${lnk}" | awk -F':' '{print $1}' )"
 		lnk_part="$( echo "${lnk}" | awk -F':' '{print $2}' )"
-		cmd="ssh ${SSH_ARGS} ${ssh_part} 'ln -s \"${dir}\" \"${lnk_part}\"'"
+		dir="$( escape_path "${dir}" )"
+		lnk_part="$( escape_path "${lnk_part}" )"
+		cmd="ssh ${SSH_ARGS} ${ssh_part} ln -s ${dir} ${lnk_part}"
 	else
+		dir="$( escape_path "${dir}" )"
+		lnk="$( escape_path "${lnk}" )"
 		cmd="ln -s ${dir} ${lnk}"
 	fi
-	logdebug "${cmd}"
+	logdebug "\$ ${cmd}"
 	eval "${cmd}" >/dev/null
 }
 
@@ -299,18 +347,18 @@ if [ "${#}" -lt "2" ]; then
 	exit 1
 fi
 
-if is_remote "$( escape_path "${1}" )"; then
-	if is_remote "$( escape_path "${2}" )"; then
+if is_remote "${1}"; then
+	if is_remote "${2}"; then
 		logerr "Source and Target cannot both be remote locations."
 		exit 1
 	fi
 fi
 
-if ! dir_exists "$( escape_path "${1}" )"; then
+if ! dir_exists "${1}"; then
 	logerr "Source directory does not exist: '${1}'. See -h for help."
 	exit 1
 fi
-if ! dir_exists "$( escape_path "${2}" )"; then
+if ! dir_exists "${2}"; then
 	logerr "Target directory does not exist: '${2}'. See -h for help."
 	exit 1
 fi
@@ -328,8 +376,8 @@ fi
 
 # Get arguments and remove them afterwards to have ${@} contain
 # all additional rsync options
-SRC="$( escape_path "${1}" )"
-DEST="$( escape_path "${2}" )"
+SRC="${1}"
+DEST="${2}"
 shift 2
 [ "${#}" -ge 1 ] && [ "${1}" = "--" ] && shift
 
@@ -361,11 +409,12 @@ BTYPE=
 # Only link destination if it already exists
 if link_exists "${DEST}/${BACKUP_LATEST}"; then
 	BTYPE="incremental"
+
 	logmsg "Starting incremental backup"
 	logmsg "\$ rsync $* ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
 
-	eval "rsync \
-		-e 'ssh ${SSH_ARGS}' \
+	cmd="rsync \
+		-e \"ssh ${SSH_ARGS}\" \
 		--recursive \
 		--perms \
 		--owner \
@@ -377,14 +426,18 @@ if link_exists "${DEST}/${BACKUP_LATEST}"; then
 		--partial-dir=${RSYNC_PARTIAL} \
 		--link-dest=../${BACKUP_LATEST} \
 		$* \
-		${SRC} ${DEST}/${BACKUP_INPROGRESS}"
+		$( escape_path "${SRC}" ) $( escape_path "${DEST}/${BACKUP_INPROGRESS}" )"
+
+	logmsg "\$ $(printf "%s" "${cmd}" | sed 's/\t//g' )"
+	eval "${cmd}"
 else
 	BTYPE="full"
+
 	logmsg "Starting full backup"
 	logmsg "\$ rsync $* ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
 
-	eval "rsync \
-		-e 'ssh ${SSH_ARGS}' \
+	cmd="rsync \
+		-e \"ssh ${SSH_ARGS}\" \
 		--recursive \
 		--perms \
 		--owner \
@@ -395,7 +448,9 @@ else
 		--delete-excluded \
 		--partial-dir=${RSYNC_PARTIAL} \
 		$* \
-		${SRC} ${DEST}/${BACKUP_INPROGRESS}"
+		$( escape_path "${SRC}" ) $( escape_path "${DEST}/${BACKUP_INPROGRESS}" )"
+		logmsg "\$ $(printf "%s" "${cmd}" | sed 's/\t//g' )"
+	eval "${cmd}"
 fi
 
 
