@@ -23,6 +23,7 @@ run_backup() {
 	local out
 	local err
 
+	rsync_args="${rsync_args} --progress --verbose"
 	timemachine_path="$( printf "%q" "${timemachine_path}" )"
 
 	out="$( create_tmp_file )"

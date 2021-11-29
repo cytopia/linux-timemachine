@@ -113,7 +113,8 @@ create_tmp_file() {
 		tmp_file="$( mktemp )"
 	fi
 
-	printf "%s" "${tmp_file}" | sed 's|/*$||'
+	echo "${tmp_file}"
+	#printf "%s" "${tmp_file}" | sed 's|/*$||'
 }
 
 
@@ -152,5 +153,4 @@ create_tmp_dir() {
 	tmp_dir="$( printf "%q" "${prefix}-${i}${suffix}" )"
 	run "mkdir -p ${tmp_dir}" "1" "stderr" "stderr"
 	echo "${tmp_dir}"
-	return
 }
