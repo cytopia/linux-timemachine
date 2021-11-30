@@ -20,7 +20,7 @@ SSH_HOST="server"
 TIMEMACHINE_ARGS=""
 RSYNC_ARGS=
 
-print_section "11 Remote (no user && default SSH port)"
+print_section "12 Remote (crazy pathname chars)"
 
 ### ################################################################################################
 ### ################################################################################################

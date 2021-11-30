@@ -23,16 +23,23 @@ check_src_dst_file_exist() {
 	local src=
 	local dst=
 
-	src="$( printf "%q" "${src_dir}" )/$( printf "%q" "${f}" )"
-	dst="$( printf "%q" "${dst_dir}" )/$( printf "%q" "${f}" )"
+	file_name="$( printf "%q" "${f}" )"
+	src="${src_dir}/${file_name}"
+	dst="${dst_dir}/${file_name}"
 
-	if [ ! -f "${src}" ]; then
+
+	cmd="test -f ${src}"
+	if ! eval "${cmd}"; then
 		printf "[TEST] [FAIL] Source file does not exist: %s\\r\\n" "${src}"
-		exit 1
+		printf "%s" "$( ls "${src_dir}" )"
+		return 1
 	fi
-	if [ ! -f "${dst}" ]; then
+
+	cmd="test -f ${dst}"
+	if ! eval "${cmd}"; then
 		printf "[TEST] [FAIL] Destination file does not exist: %s\\r\\n" "${dst}"
-		exit 1
+		printf "%s" "$( ls "${src_dir}" )"
+		return 1
 	fi
 	printf "[TEST] [OK]   Source and Destination files exist\\r\\n"
 }
@@ -49,17 +56,29 @@ check_dst_file_is_file() {
 	local dst_dir="${2}"
 	local dst=
 
-	dst="$( printf "%q" "${dst_dir}" )/$( printf "%q" "${f}" )"
+	file_name="$( printf "%q" "${f}" )"
+	dst="${dst_dir}/${file_name}"
 
-	if [ -d "${dst}" ]; then
+	cmd="test -d ${dst}"
+	if eval "${cmd}"; then
 		printf "[TEST] [FAIL] Destination file is a directory: %s\\r\\n" "${dst}"
-		exit 1
+		return 1
 	fi
-	if [ -L "${dst}" ]; then
+
+	cmd="test -L ${dst}"
+	if eval "${cmd}"; then
 		printf "[TEST] [FAIL] Destination file is a symlink: %s\\r\\n" "${dst}"
-		exit 1
+		return 1
 	fi
-	printf "[TEST] [OK]   Destination file is a regular file\\r\\n"
+
+	cmd="test -f ${dst}"
+	if eval "${cmd}"; then
+		printf "[TEST] [OK]   Destination file is a regular file: %s\\r\\n" "${dst}"
+		return 0
+	fi
+
+	printf "[TEST] [FAIL] Destination file is not a regular file: %s\\r\\n" "${dst}"
+	return 1
 }
 
 

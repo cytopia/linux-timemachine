@@ -15,7 +15,7 @@ FUNCPATH="${SCRIPTPATH}/.lib/functions.sh"
 ###
 RSYNC_ARGS="-- --copy-links"
 
-print_section "05 --copy-links"
+print_section "06 crazy pathname chars"
 
 ### ################################################################################################
 ### ################################################################################################
@@ -97,6 +97,7 @@ check_file() {
 
 	print_subline "Validate ${file}"
 	check_dst_file_is_file "${file}" "${destination}"
+	check_src_dst_file_exist "${file}" "${SRC_DIR}" "${destination}"
 	check_src_dst_file_equal "${file}" "${SRC_DIR}" "${destination}"
 }
 
@@ -107,6 +108,7 @@ check_link() {
 
 	print_subline "Validate ${link}"
 	check_dst_file_is_file "${link}" "${destination}"
+	check_src_dst_file_exist "${file}" "${SRC_DIR}" "${destination}"
 	check_src_dst_file_equal "${link}" "${SRC_DIR}" "${destination}"
 }
 

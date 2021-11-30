@@ -39,6 +39,11 @@ create_file() {
 		run "dd if=/dev/zero of=${file_path} bs=1m count=${file_size} 2>/dev/null"
 	fi
 	run "chmod ${file_perms} ${file_path}"
+
+	if ! eval "test -f ${file_path}"; then
+		echo "No file created: ${file_path}"
+		return 1
+	fi
 }
 
 
