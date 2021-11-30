@@ -43,7 +43,7 @@ run_backup() {
 		cat "${err}"
 		rm "${out}"
 		rm "${err}"
-		exit 1
+		return 1
 	fi
 	cat "${out}"
 	echo
@@ -56,7 +56,7 @@ run_backup() {
 		printf "Warnings:\\r\\n----------\\r\\n%s\\r\\n" "$( cat "${err}" )"
 		rm "${out}"
 		rm "${err}"
-		exit 1
+		return 1
 	fi
 	printf "[TEST] [OK]   No warnings detected.\\r\\n"
 
@@ -67,7 +67,7 @@ run_backup() {
 		printf "[TEST] [FAIL] Not a '%s' backup\\r\\n" "${backup_type}"
 		rm "${out}"
 		rm "${err}"
-		exit 1
+		return 1
 	fi
 	printf "[TEST] [OK]   Backup type: '%s' backup.\\r\\n" "${backup_type}"
 
@@ -78,7 +78,7 @@ run_backup() {
 		printf "[TEST] [FAIL] No latest symlink available: %s\\r\\n" "${pwd}/${dst_dir}/current"
 		rm "${out}"
 		rm "${err}"
-		exit 1
+		return 1
 	fi
 	printf "[TEST] [OK]   Latest symlink available: %s\\r\\n" "${pwd}/${dst_dir}/current"
 
@@ -89,7 +89,7 @@ run_backup() {
 		printf "[TEST] [FAIL] Undeleted '.inprogress' directory found: %s\\r\\n" "${pwd}/${dst_dir}/current/.inprogress"
 		rm "${out}"
 		rm "${err}"
-		exit 1
+		return 1
 	fi
 	printf "[TEST] [OK]   No '.inprogress' directory found\\r\\n"
 
@@ -138,7 +138,7 @@ run_remote_backup() {
 		rm "${err}"
 		run "docker rm -f ${docker_client_name}" || true
 		run "docker rm -f ${docker_server_name}" || true
-		exit 1
+		return 1
 	fi
 	cat "${out}"
 	echo
@@ -153,7 +153,7 @@ run_remote_backup() {
 		rm "${err}"
 		run "docker rm -f ${docker_client_name}" || true
 		run "docker rm -f ${docker_server_name}" || true
-		exit 1
+		return 1
 	fi
 	printf "[TEST] [OK]   No warnings detected.\\r\\n"
 
@@ -166,7 +166,7 @@ run_remote_backup() {
 		rm "${err}"
 		run "docker rm -f ${docker_client_name}" || true
 		run "docker rm -f ${docker_server_name}" || true
-		exit 1
+		return 1
 	fi
 	printf "[TEST] [OK]   Backup type: '%s' backup.\\r\\n" "${backup_type}"
 
@@ -179,7 +179,7 @@ run_remote_backup() {
 		rm "${err}"
 		run "docker rm -f ${docker_client_name}" || true
 		run "docker rm -f ${docker_server_name}" || true
-		exit 1
+		return 1
 	fi
 	printf "[TEST] [OK]   Latest symlink available: %s\\r\\n" "${ssh_string}:${pwd}${dst_dir}/current"
 
@@ -192,7 +192,7 @@ run_remote_backup() {
 		rm "${err}"
 		run "docker rm -f ${docker_client_name}" || true
 		run "docker rm -f ${docker_server_name}" || true
-		exit 1
+		return 1
 	fi
 	printf "[TEST] [OK]   No '.inprogress' directory found\\r\\n"
 

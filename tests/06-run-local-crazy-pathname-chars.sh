@@ -93,7 +93,8 @@ create_file "${SRC_DIR}" "${FILE8_NAME}" "1" "${FILE8_PERM}"
 check_file() {
 	local file="${1}"
 	local destination=
-	destination="${DST_DIR}/current/$(basename "${SRC_DIR}")"
+	#destination="${DST_DIR}/current/$(basename "${SRC_DIR}")"
+	destination="${DST_DIR}/current/$(printf "%q" "$(eval "basename ${SRC_DIR}")")"
 
 	print_subline "Validate ${file}"
 	check_dst_file_is_file "${file}" "${destination}"

@@ -23,7 +23,7 @@ check_dir_size() {
 		return 0
 	fi
 	printf "[TEST] [FAIL] src-dir(%s) and dst-dir(%s) size don't match: (src: %s) (dst: %s)\\r\\n" "${src_size}" "${dst_size}" "${src}" "${dst}"
-	exit 1
+	return 1
 }
 
 

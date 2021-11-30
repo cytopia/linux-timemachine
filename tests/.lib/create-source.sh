@@ -26,7 +26,7 @@ create_file() {
 
 	if ! eval "test -d ${src_dir}"; then
 		printf "No such directpry: %s\\n" "${src_dir}"
-		exit 1
+		return 1
 	fi
 	# Create sub-directory if it doesn't exist
 	if [ "${sub_dir}" != "." ]; then
@@ -61,7 +61,7 @@ create_link() {
 
 	if ! eval "test -d ${src_dir}"; then
 		printf "No such directpry: %s\\n" "${src_dir}"
-		exit 1
+		return 1
 	fi
 	# Create sub-directory if it doesn't exist
 	if [ "${sub_dir}" != "." ]; then

@@ -28,7 +28,7 @@ check_src_dst_file_uid() {
 
 	if [ "${src_uid}" != "${dst_uid}" ]; then
 		printf "[TEST] [FAIL] Owner uid: (%s) src and dst don't match: %s != %s\\r\\n" "${f}" "${src_uid}" "${dst_uid}"
-		exit 1
+		return 1
 	else
 		printf "[TEST] [OK]   Owner uid: (%s) src and dst match: %s = %s\\r\\n" "${f}" "${src_uid}" "${dst_uid}"
 	fi
@@ -54,7 +54,7 @@ check_src_dst_file_gid() {
 
 	if [ "${src_gid}" != "${dst_gid}" ]; then
 		printf "[TEST] [FAIL] Owner gid: (%s) src and dst don't match: %s != %s\\r\\n" "${f}" "${src_gid}" "${dst_gid}"
-		exit 1
+		return 1
 	else
 		printf "[TEST] [OK]   Owner gid: (%s) src and dst match: %s = %s\\r\\n" "${f}" "${src_gid}" "${dst_gid}"
 	fi

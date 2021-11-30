@@ -97,14 +97,14 @@ check_dst_file_is_link() {
 
 	if [ -d "${dst}" ]; then
 		printf "[TEST] [FAIL] Destination file is a directory: %s\\r\\n" "${dst}"
-		exit 1
+		return 1
 	fi
 	if [ -L "${dst}" ]; then
 		printf "[TEST] [OK]   Destination file is a symlink\\r\\n"
 		return
 	fi
 	printf "[TEST] [FAIL] Destination file is not a symlink: %s\\r\\n" "${dst}"
-	exit 1
+	return 1
 }
 
 
@@ -127,7 +127,7 @@ check_src_dst_file_equal() {
 
 	if ! run "cmp ${src} ${dst}"; then
 		printf "[TEST] [FAIL] Source (%s) and dest (%s) files differ\\r\\n" "${src}" "${dst}"
-		exit 1
+		return 1
 	else
 		printf "[TEST] [OK]   Source and dest files are equal\\r\\n"
 	fi
