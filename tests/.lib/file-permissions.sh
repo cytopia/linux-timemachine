@@ -28,7 +28,7 @@ check_dst_file_perm() {
 
 	if [ "${exp_perm}" != "${dst_perm}" ]; then
 		printf "[TEST] [FAIL] Permissions: %s: (src: %s) (exp: %s) (dst: %s}\\r\\n" "${f}" "${src_perm}" "${exp_perm}" "${dst_perm}"
-		exit 1
+		return 1
 	else
 		printf "[TEST] [OK]   Permissions: %s: (src: %s) (exp: %s) (dst: %s}\\r\\n" "${f}" "${src_perm}" "${exp_perm}" "${dst_perm}"
 	fi
@@ -54,7 +54,7 @@ check_src_dst_file_perm() {
 
 	if [ "${src_perm}" != "${dst_perm}" ]; then
 		printf "[TEST] [FAIL] Permissions: (%s) src and dst don't match: %s != %s\\r\\n" "${f}" "${src_perm}" "${dst_perm}"
-		exit 1
+		return 1
 	else
 		printf "[TEST] [OK]   Permissions: (%s) src and dst match: %s = %s\\r\\n" "${f}" "${src_perm}" "${dst_perm}"
 	fi
@@ -182,11 +182,12 @@ get_default_dest_file_perm() {
 get_file_perm() {
 	local file_path="${1}"
 	local out
+	file_path="$( printf "%q" "${file_path}" )"
 
 	if [ "$(uname)" = "Linux" ]; then
-		out="$( run "stat -c '%a' '${file_path}'" "1" "stderr" )"
+		out="$( run "stat -c '%a' ${file_path}" "1" "stderr" )"
 	else
-		out="$( run "stat -f '%A' '${file_path}'" "1" "stderr" )"
+		out="$( run "stat -f '%A' ${file_path}" "1" "stderr" )"
 	fi
 	out="${out//\"/}"
 	>&2 echo "${out}"

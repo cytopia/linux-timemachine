@@ -13,8 +13,8 @@ MY_DESC="OSX-like timemachine cli script for Linux and BSD (and even OSX)"
 MY_PROJ="https://github.com/cytopia/linux-timemachine"
 MY_AUTH="cytopia"
 MY_MAIL="cytopia@everythingcli.org"
-MY_VERS="1.3"
-MY_DATE="2021-04-08"
+MY_VERS="1.3.1"
+MY_DATE="2021-12-02"
 
 # Default command line arguments
 VERBOSE=
@@ -27,7 +27,7 @@ SSH_ARGS="-oStrictHostKeyChecking=no -oLogLevel=QUIET -q"
 
 
 ################################################################################
-# Functions
+# Info Functions
 ################################################################################
 
 print_usage() {
@@ -101,6 +101,12 @@ print_version() {
 	echo "${MY_PROJ}"
 }
 
+
+
+################################################################################
+# Logging Functions
+################################################################################
+
 logdebug() {
 	# Only log to stdout when verbose is turned on
 	if [ "${VERBOSE}" = "debug" ]; then
@@ -119,11 +125,36 @@ logerr() {
 	echo "$(date +'%Y-%m-%d %H:%M:%S') ${MY_NAME}: [ERROR] ${*}" >&2
 }
 
+
+
+################################################################################
+# Backup Functions
+################################################################################
+
+###
+### POSIX compliant path escape (like printf "%q" in bash)
+###
+escape_path() {
+	# POSIX version
+	# https://mullikine.github.io/posts/missing-posix-shell-functions-cmd-and-myeval/
+	for var in "${@}"; do
+		#printf "%s" "$(printf %s "${var}" | sed "s/'/'\\\\''/g")";
+		printf "'%s' " "$(printf %s "${var}" | sed "s/'/'\\\\''/g")";
+	done | sed 's/ $//'
+}
+
 ###
 ### Check if the destination is a remote server
 ###
 is_remote() {
-	echo "${1}" | grep -E '.+:.+' >/dev/null
+	logdebug "Checking if dir is remote (SSH) or local"
+	if echo "${1}" | grep -E '.+:.+' >/dev/null; then
+		logdebug "Dir is remote: ${1}"
+		return 0
+	else
+		logdebug "Dir is local: ${1}"
+		return 1
+	fi
 }
 
 ###
@@ -135,12 +166,25 @@ dir_exists() {
 	if is_remote "${directory}"; then
 		ssh_part="$( echo "${directory}" | awk -F':' '{print $1}' )"
 		dir_part="$( echo "${directory}" | awk -F':' '{print $2}' )"
-		cmd="ssh ${SSH_ARGS} ${ssh_part} 'test -d \"${dir_part}\"'"
+		dir_part="$( escape_path "${dir_part}" )"
+		ssh_cmd="test -d ${dir_part}"
+		cmd="ssh ${SSH_ARGS} ${ssh_part} ${ssh_cmd}"
+		logdebug "Checking if remote dir exists: ${dir_part}"
+		logdebug "\$ ${cmd}"
+		if ! eval "${cmd}"; then
+			logerr "Remote directory does not exist: ${dir_part}"
+			return 1
+		fi
 	else
-		cmd="test -d '${directory}'"
+		directory="$( escape_path "${directory}" )"
+		cmd="test -d ${directory}"
+		logdebug "Checking if local dir exists: ${directory}"
+		logdebug "\$ ${cmd}"
+		if ! eval "${cmd}" >/dev/null; then
+			logerr "Local directory does not exist: ${dir_part}"
+			return 1
+		fi
 	fi
-	logdebug "${cmd}"
-	eval "${cmd}" >/dev/null
 }
 
 ###
@@ -152,29 +196,25 @@ link_exists() {
 	if is_remote "${directory}"; then
 		ssh_part="$( echo "${directory}" | awk -F':' '{print $1}' )"
 		dir_part="$( echo "${directory}" | awk -F':' '{print $2}' )"
-		cmd="ssh ${SSH_ARGS} ${ssh_part} 'test -L \"${dir_part}\"'"
+		dir_part="$( escape_path "${dir_part}" )"
+		ssh_cmd="test -L ${dir_part}"
+		cmd="ssh ${SSH_ARGS} ${ssh_part} ${ssh_cmd}"
+		logdebug "Checking if remote symlink exists: ${dir_part}"
+		logdebug "\$ ${cmd}"
+		if ! eval "${cmd}" >/dev/null; then
+			logdebug "Remote symlink does not exist: ${dir_part}"
+			return 1
+		fi
 	else
-		cmd="test -L '${directory}'"
+		directory="$( escape_path "${directory}" )"
+		cmd="test -L ${directory}"
+		logdebug "Checking if local symlink exists: ${directory}"
+		logdebug "\$ ${cmd}"
+		if ! eval "${cmd}" >/dev/null; then
+			logdebug "Local symlink does not exist: ${directory}"
+			return 1
+		fi
 	fi
-	logdebug "${cmd}"
-	eval "${cmd}" >/dev/null
-}
-
-###
-### Remove local or remote file
-###
-remove_file() {
-	file="${1}"
-
-	if is_remote "${file}"; then
-		ssh_part="$( echo "${file}" | awk -F':' '{print $1}' )"
-		file_part="$( echo "${file}" | awk -F':' '{print $2}' )"
-		cmd="ssh ${SSH_ARGS} ${ssh_part} 'rm \"${file_part}\"'"
-	else
-		cmd="rm '${file}'"
-	fi
-	logdebug "${cmd}"
-	eval "${cmd}" >/dev/null
 }
 
 ###
@@ -188,12 +228,27 @@ rename_directory() {
 		ssh_part="$( echo "${from}" | awk -F':' '{print $1}' )"
 		dir_from_part="$( echo "${from}" | awk -F':' '{print $2}' )"
 		dir_to_part="$( echo "${to}" | awk -F':' '{print $2}' )"
-		cmd="ssh ${SSH_ARGS} ${ssh_part} 'mv \"${dir_from_part}\" \"${dir_to_part}\"'"
+		dir_from_part="$( escape_path "${dir_from_part}" )"
+		dir_to_part="$( escape_path "${dir_to_part}" )"
+		ssh_cmd="mv ${dir_from_part} ${dir_to_part}"
+		cmd="ssh ${SSH_ARGS} ${ssh_part} ${ssh_cmd}"
+		logdebug "Renaming remote dir: ${dir_from_part} -> ${dir_to_part}"
+		logdebug "\$ ${cmd}"
+		if ! eval "${cmd}" >/dev/null; then
+			logerr "Failed to rename remote dir"
+			return 1
+		fi
 	else
-		cmd="mv '${from}' '${to}'"
+		from="$( escape_path "${from}" )"
+		to="$( escape_path "${to}" )"
+		cmd="mv ${from} ${to}"
+		logdebug "Renaming local dir: ${from} -> ${to}"
+		logdebug "\$ ${cmd}"
+		if ! eval "${cmd}" >/dev/null; then
+			logerr "Failed to rename local dir"
+			return 1
+		fi
 	fi
-	logdebug "${cmd}"
-	eval "${cmd}" >/dev/null
 }
 
 ###
@@ -206,12 +261,27 @@ link_directory() {
 	if is_remote "${lnk}"; then
 		ssh_part="$( echo "${lnk}" | awk -F':' '{print $1}' )"
 		lnk_part="$( echo "${lnk}" | awk -F':' '{print $2}' )"
-		cmd="ssh ${SSH_ARGS} ${ssh_part} 'ln -s \"${dir}\" \"${lnk_part}\"'"
+		dir="$( escape_path "${dir}" )"
+		lnk_part="$( escape_path "${lnk_part}" )"
+		ssh_cmd="ln -sfn ${dir} ${lnk_part}"
+		cmd="ssh ${SSH_ARGS} ${ssh_part} ${ssh_cmd}"
+		logdebug "Creating remote symlink: ${lnk}"
+		logdebug "\$ ${cmd}"
+		if ! eval "${cmd}" >/dev/null; then
+			logerr "Failed to created remote symlink: ${lnk}"
+			return 1
+		fi
 	else
-		cmd="ln -s '${dir}' '${lnk}'"
+		dir="$( escape_path "${dir}" )"
+		lnk="$( escape_path "${lnk}" )"
+		cmd="ln -sfn ${dir} ${lnk}"
+		logdebug "Creating local symlink: ${lnk}"
+		logdebug "\$ ${cmd}"
+		if ! eval "${cmd}" >/dev/null; then
+			logerr "Failed to created local symlink: ${lnk}"
+			return 1
+		fi
 	fi
-	logdebug "${cmd}"
-	eval "${cmd}" >/dev/null
 }
 
 
@@ -221,50 +291,61 @@ link_directory() {
 ################################################################################
 
 # Parse input args with getopts
-while getopts :vdpi:hV-: opt; do
-	# ----- long options
-	if [ "${opt}" = "-" ]; then
-		opt=${OPTARG}
-		[ -z "${opt}" ] && break	# "--" terminates argument processing
-	fi
-	# shellcheck disable=SC2214
-	case "${opt}" in
-		# ---- Help / version
-		V | version)
+while test "${#}" -gt 0; do
+	case "${1}" in
+		# ---------- Help / version ----------
+		-V | --version)
 			print_version
 			exit
 			;;
-		h | help)
+		-h | --help)
 			print_usage
 			exit
 			;;
-		# ----- Options
-		p | port)
-			shift
-			PORT="${1}"
-			SSH_ARGS="${SSH_ARGS} -p ${PORT}"
-			;;
-		i | identity)
-			shift
-			KEY="${1}"
-			SSH_ARGS="${SSH_ARGS} -i ${KEY}"
-			;;
-		v | verbose)
+		# ---------- Verbosity ----------
+		-v | --verbose)
 			if [ "${VERBOSE}" != "debug" ]; then
 				VERBOSE="verbose"
 			fi
+			shift
 			;;
-		d | debug)
+		-d | --debug)
 			VERBOSE="debug"
+			shift
 			;;
-		\?)	logerr "Unknown option -${OPTARG}, see -h for help."
-			exit 2
+		# ---------- Options ----------
+		-p | --port)
+			if [ -z "${2:-}" ]; then
+				logerr "${1} requires an argument, see -h for help."
+				exit 2
+			fi
+			shift
+			PORT="${1}"
+			SSH_ARGS="${SSH_ARGS} -p ${PORT}"
+			shift
 			;;
-		*)	logerr "Unknown option --${opt}, see -h for help."
-			exit 2
+		-i | --identity)
+			if [ -z "${2:-}" ]; then
+				logerr "${1} requires an argument, see -h for help."
+				exit 2
+			fi
+			shift
+			KEY="${1}"
+			SSH_ARGS="${SSH_ARGS} -i ${KEY}"
+			shift
 			;;
+		-*)
+			if [ "${1}" != "--" ]; then
+				logerr "Unknown option ${1}, see -h for help."
+				exit 2
+			fi
+			shift
+			;;
+		*)
+			# No more options available, so break and evaluate
+			# positional arguments.
+			break
 	esac
-	shift
 done
 
 
@@ -274,23 +355,27 @@ done
 ################################################################################
 
 if [ "${#}" -lt "2" ]; then
-	logerr "<source> and <destination> are required. See -h for help."
+	logerr "<source> and <destination> are required."
+	logerr "See -h for help."
 	exit 1
 fi
 
 if is_remote "${1}"; then
 	if is_remote "${2}"; then
 		logerr "Source and Target cannot both be remote locations."
+		logerr "See -h for help."
 		exit 1
 	fi
 fi
 
 if ! dir_exists "${1}"; then
-	logerr "Source directory does not exist: '${1}'. See -h for help."
+	logerr "Source directory does not exist: ${1}"
+	logerr "See -h for help."
 	exit 1
 fi
 if ! dir_exists "${2}"; then
-	logerr "Target directory does not exist: '${2}'. See -h for help."
+	logerr "Target directory does not exist: ${2}"
+	logerr "See -h for help."
 	exit 1
 fi
 
@@ -340,11 +425,12 @@ BTYPE=
 # Only link destination if it already exists
 if link_exists "${DEST}/${BACKUP_LATEST}"; then
 	BTYPE="incremental"
-	logmsg "Starting incremental backup"
-	logmsg "\$ rsync $* ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
 
-	rsync \
-		-e "ssh ${SSH_ARGS}" \
+	logmsg "Starting incremental backup"
+	logmsg "\$ rsync $* $( escape_path "${SRC}" ) $( escape_path "${DEST}/${BACKUP_INPROGRESS}" )"
+
+	cmd="rsync \
+		-e \"ssh ${SSH_ARGS}\" \
 		--recursive \
 		--perms \
 		--owner \
@@ -353,17 +439,18 @@ if link_exists "${DEST}/${BACKUP_LATEST}"; then
 		--links \
 		--delete \
 		--delete-excluded \
-		--partial-dir="${RSYNC_PARTIAL}" \
-		--link-dest="../${BACKUP_LATEST}" \
-		"$@" \
-		"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
+		--partial-dir=${RSYNC_PARTIAL} \
+		--link-dest=../${BACKUP_LATEST} \
+		$* \
+		$( escape_path "${SRC}" ) $( escape_path "${DEST}/${BACKUP_INPROGRESS}" )"
 else
 	BTYPE="full"
-	logmsg "Starting full backup"
-	logmsg "\$ rsync $* ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
 
-	rsync \
-		-e "ssh ${SSH_ARGS}" \
+	logmsg "Starting full backup"
+	logmsg "\$ rsync $* $( escape_path "${SRC}" ) $( escape_path "${DEST}/${BACKUP_INPROGRESS}" )"
+
+	cmd="rsync \
+		-e \"ssh ${SSH_ARGS}\" \
 		--recursive \
 		--perms \
 		--owner \
@@ -372,34 +459,29 @@ else
 		--links \
 		--delete \
 		--delete-excluded \
-		--partial-dir="${RSYNC_PARTIAL}" \
-		"$@" \
-		"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
+		--partial-dir=${RSYNC_PARTIAL} \
+		$* \
+		$( escape_path "${SRC}" ) $( escape_path "${DEST}/${BACKUP_INPROGRESS}" )"
+fi
+
+if ! eval "${cmd}"; then
+	logerr "${MY_NAME} Backup has failed"
+	exit 1
 fi
 
 
 ###
 ### 2/3 Finish atomic operation
 ###
-
 # Move temporary atomic directory to chosen dest directory
-logmsg "\$ mv ${DEST}/${BACKUP_INPROGRESS} ${DEST}/${BACKUP}"
 rename_directory "${DEST}/${BACKUP_INPROGRESS}" "${DEST}/${BACKUP}"
 
 
 ###
 ### 3/3 Latest symlink
 ###
-
-# Remove current 'latest' symlink
-if link_exists "${DEST}/${BACKUP_LATEST}"; then
-	logmsg "\$ rm ${DEST}/${BACKUP_LATEST}"
-	remove_file "${DEST}/${BACKUP_LATEST}"
-fi
-
-# Set new 'latest' link-dest for incremental backups
-logmsg "\$ ln -s ${BACKUP} ${DEST}/${BACKUP_LATEST}"
 link_directory "${BACKUP}" "${DEST}/${BACKUP_LATEST}"
+link_exists "${DEST}/${BACKUP_LATEST}"
 
 
 ###

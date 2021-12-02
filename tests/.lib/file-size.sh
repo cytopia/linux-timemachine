@@ -28,7 +28,7 @@ check_src_dst_file_size() {
 
 	if [ "${src_size}" != "${dst_size}" ]; then
 		printf "[TEST] [FAIL] File size: (%s) src and dst don't match: %s != %s\\r\\n" "${f}" "${src_size}" "${dst_size}"
-		exit 1
+		return 1
 	else
 		printf "[TEST] [OK]   File size: (%s) src and dst match: %s = %s\\r\\n" "${f}" "${src_size}" "${dst_size}"
 	fi

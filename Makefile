@@ -91,6 +91,8 @@ test: test-local-default-rel-slash-slash
 test: test-local-no_perms
 test: test-local-no_times
 test: test-local-copy_links
+test: test-local-crazy-filename-chars
+test: test-local-crazy-pathname-chars
 test: test-remote-default-abs
 test: test-remote-default-rel
 test: test-remote-ssh_1111_port-nouser
@@ -102,7 +104,7 @@ test: test-remote-ssh_def_port-user
 test: test-remote-ssh_config-default
 test: test-remote-ssh_config-port_1111
 test: test-remote-ssh_config-port_overwrite
-
+test: test-remote-ssh_crazy-source-pathname-chars
 
 test-local-default-abs-noslash-noslash:
 	./tests/01-run-local-default-abs-noslash-noslash.sh
@@ -137,6 +139,11 @@ test-local-no_times:
 test-local-copy_links:
 	./tests/05-run-local-copy_links.sh
 
+test-local-crazy-filename-chars:
+	./tests/06-run-local-crazy-filename-chars.sh
+
+test-local-crazy-pathname-chars:
+	./tests/06-run-local-crazy-pathname-chars.sh
 
 test-remote-default-abs:
 	./tests/10-run-remote-default-abs.sh
@@ -170,6 +177,9 @@ test-remote-ssh_config-port_1111:
 
 test-remote-ssh_config-port_overwrite:
 	./tests/12-run-remote-ssh_config-port_overwrite.sh
+
+test-remote-ssh_crazy-source-pathname-chars:
+	./tests/13-run-remote-crazy-source-pathname-chars.sh
 
 
 # -------------------------------------------------------------------------------------------------

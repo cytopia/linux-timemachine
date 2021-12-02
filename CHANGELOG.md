@@ -1,6 +1,20 @@
 # Changelog
 
 
+## Release v1.3.1
+
+#### Changed
+- Switch to semver for versioning
+- Wrap rsync into eval to escape paths
+
+#### Added
+- CI: check for special chars in file names
+
+#### Fixed
+- Fixed #69 special chars in source directory
+- Fixed #67 argument parsing
+
+
 ## Release v1.2
 
 #### Fixed

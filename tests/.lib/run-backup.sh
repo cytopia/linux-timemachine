@@ -23,6 +23,9 @@ run_backup() {
 	local out
 	local err
 
+	rsync_args="${rsync_args} --progress --verbose"
+	timemachine_path="$( printf "%q" "${timemachine_path}" )"
+
 	out="$( create_tmp_file )"
 	err="$( create_tmp_file )"
 
@@ -34,13 +37,13 @@ run_backup() {
 	###
 	### Run and check for failure
 	###
-	if ! run "cd \"${pwd}\" && \"${timemachine_path}\" -d \"${src_dir}\" \"${dst_dir}\" ${rsync_args} > \"${out}\" 2> \"${err}\""; then
+	if ! run "cd \"${pwd}\" && ${timemachine_path} -d ${src_dir} ${dst_dir} ${rsync_args} > \"${out}\" 2> \"${err}\""; then
 		printf "[TEST] [FAIL] Run failed.\\r\\n"
 		cat "${out}"
 		cat "${err}"
 		rm "${out}"
 		rm "${err}"
-		exit 1
+		return 1
 	fi
 	cat "${out}"
 	echo
@@ -53,7 +56,7 @@ run_backup() {
 		printf "Warnings:\\r\\n----------\\r\\n%s\\r\\n" "$( cat "${err}" )"
 		rm "${out}"
 		rm "${err}"
-		exit 1
+		return 1
 	fi
 	printf "[TEST] [OK]   No warnings detected.\\r\\n"
 
@@ -64,29 +67,29 @@ run_backup() {
 		printf "[TEST] [FAIL] Not a '%s' backup\\r\\n" "${backup_type}"
 		rm "${out}"
 		rm "${err}"
-		exit 1
+		return 1
 	fi
 	printf "[TEST] [OK]   Backup type: '%s' backup.\\r\\n" "${backup_type}"
 
 	###
 	### Check for existing latest symlink
 	###
-	if [ ! -L "${pwd}/${dst_dir}/current" ]; then
+	if ! eval "test -L ${pwd}/${dst_dir}/current"; then
 		printf "[TEST] [FAIL] No latest symlink available: %s\\r\\n" "${pwd}/${dst_dir}/current"
 		rm "${out}"
 		rm "${err}"
-		exit 1
+		return 1
 	fi
 	printf "[TEST] [OK]   Latest symlink available: %s\\r\\n" "${pwd}/${dst_dir}/current"
 
 	###
 	### Check partial backup .inprogress directory
 	###
-	if [ -d "${pwd}/${dst_dir}/current/.inprogress" ]; then
+	if eval "test -d ${pwd}/${dst_dir}/current/.inprogress"; then
 		printf "[TEST] [FAIL] Undeleted '.inprogress' directory found: %s\\r\\n" "${pwd}/${dst_dir}/current/.inprogress"
 		rm "${out}"
 		rm "${err}"
-		exit 1
+		return 1
 	fi
 	printf "[TEST] [OK]   No '.inprogress' directory found\\r\\n"
 
@@ -118,16 +121,32 @@ run_remote_backup() {
 
 	out="$( create_tmp_file )"
 	err="$( create_tmp_file )"
+	exc="$( create_tmp_file )"
 
 	###
 	### Give 2 seconds time for a new unique directory name (second based) to be created
 	###
 	sleep 2
 
+	# Create execution file
+	{
+		printf "#!/bin/bash\\n";
+		printf "SRC='%s'\\n" "${src_dir}";
+		printf "DST='%s'\\n" "${dst_dir}";
+		printf "BIN=\"%s\"\\n" "${timemachine_path}";
+		printf "ARG=\"%s\"\\n" "${timemachine_args}";
+		printf "SSH=\"%s\"\\n" "${ssh_string}";
+		printf "RAR=\"%s\"\\n" "${rsync_args}";
+		printf "bash \${BIN} -d \${ARG} \"\${SRC}\" \${SSH}:\"\${DST}\" \${RAR}\\n";
+	} > "${exc}"
+	chmod +x "${exc}"
+	docker cp "${exc}" "${docker_client_name}:/run.sh"
+	#cat "${exc}"
 	###
 	### Run and check for failure
 	###
-	if ! run "docker exec ${docker_client_name} ${timemachine_path} -d ${timemachine_args} ${src_dir} ${ssh_string}:${dst_dir} ${rsync_args} > \"${out}\" 2> \"${err}\""; then
+	if ! run "docker exec ${docker_client_name} /run.sh > \"${out}\" 2> \"${err}\""; then
+	#if ! run "docker exec ${docker_client_name} ${timemachine_path} -d ${timemachine_args} ${src_dir} ${ssh_string}:${dst_dir} ${rsync_args} > \"${out}\" 2> \"${err}\""; then
 		printf "[TEST] [FAIL] Run failed.\\r\\n"
 		cat "${out}"
 		cat "${err}"
@@ -135,7 +154,7 @@ run_remote_backup() {
 		rm "${err}"
 		run "docker rm -f ${docker_client_name}" || true
 		run "docker rm -f ${docker_server_name}" || true
-		exit 1
+		return 1
 	fi
 	cat "${out}"
 	echo
@@ -150,7 +169,7 @@ run_remote_backup() {
 		rm "${err}"
 		run "docker rm -f ${docker_client_name}" || true
 		run "docker rm -f ${docker_server_name}" || true
-		exit 1
+		return 1
 	fi
 	printf "[TEST] [OK]   No warnings detected.\\r\\n"
 
@@ -163,7 +182,7 @@ run_remote_backup() {
 		rm "${err}"
 		run "docker rm -f ${docker_client_name}" || true
 		run "docker rm -f ${docker_server_name}" || true
-		exit 1
+		return 1
 	fi
 	printf "[TEST] [OK]   Backup type: '%s' backup.\\r\\n" "${backup_type}"
 
@@ -176,7 +195,7 @@ run_remote_backup() {
 		rm "${err}"
 		run "docker rm -f ${docker_client_name}" || true
 		run "docker rm -f ${docker_server_name}" || true
-		exit 1
+		return 1
 	fi
 	printf "[TEST] [OK]   Latest symlink available: %s\\r\\n" "${ssh_string}:${pwd}${dst_dir}/current"
 
@@ -189,7 +208,7 @@ run_remote_backup() {
 		rm "${err}"
 		run "docker rm -f ${docker_client_name}" || true
 		run "docker rm -f ${docker_server_name}" || true
-		exit 1
+		return 1
 	fi
 	printf "[TEST] [OK]   No '.inprogress' directory found\\r\\n"
 

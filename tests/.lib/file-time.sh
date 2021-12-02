@@ -36,7 +36,7 @@ check_src_dst_file_mod_time() {
 	if [ "${match}" = "0" ]; then
 		if [ "${src_time}" = "${dst_time}" ]; then
 			printf "[TEST] [FAIL] Mod time: (%s) src and dst match: %s != %s\\r\\n" "${f}" "${src_time}" "${dst_time}"
-			exit 1
+			return 1
 		else
 			printf "[TEST] [OK]   Mod time: (%s) src and dst do not match: %s = %s\\r\\n" "${f}" "${src_time}" "${dst_time}"
 		fi
@@ -44,7 +44,7 @@ check_src_dst_file_mod_time() {
 	else
 		if [ "${src_time}" != "${dst_time}" ]; then
 			printf "[TEST] [FAIL] Mod time: (%s) src and dst don't match: %s != %s\\r\\n" "${f}" "${src_time}" "${dst_time}"
-			exit 1
+			return 1
 		else
 			printf "[TEST] [OK]   Mod time: (%s) src and dst match: %s = %s\\r\\n" "${f}" "${src_time}" "${dst_time}"
 		fi

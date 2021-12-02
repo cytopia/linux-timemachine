@@ -113,7 +113,8 @@ create_tmp_file() {
 		tmp_file="$( mktemp )"
 	fi
 
-	printf "%s" "${tmp_file}" | sed 's|/*$||'
+	echo "${tmp_file}"
+	#printf "%s" "${tmp_file}" | sed 's|/*$||'
 }
 
 
@@ -123,6 +124,7 @@ create_tmp_file() {
 create_tmp_dir() {
 	local absolute="${1:-1}"
 	local pwd="${2:-}"
+	local suffix="${3:-}"
 	local tmp_dir=
 
 	###
@@ -130,11 +132,11 @@ create_tmp_dir() {
 	###
 	if [ "${absolute}" = "0" ]; then
 		i=0
-		while  [ -d "${pwd}/.tmp/${i}" ] || [ -f "${pwd}/.tmp/${i}" ]; do
+		while  [ -d "${pwd}/.tmp/${i}${suffix}" ] || [ -f "${pwd}/.tmp/${i}${suffix}" ]; do
 			i="$(( i + 1 ))"
 		done
-		tmp_dir=".tmp/${i}"
-		run "cd '${pwd}' && mkdir -p '${tmp_dir}'" "1" "stderr" "stderr"
+		tmp_dir=".tmp/${i}${suffix}"
+		run "cd ${pwd} && mkdir -p ${tmp_dir}" "1" "stderr" "stderr"
 		echo "${tmp_dir}"
 		return
 	fi
@@ -142,17 +144,13 @@ create_tmp_dir() {
 	###
 	### Create absolute path tmp dir
 	###
-	if ! command -v mktemp >/dev/null 2>&1; then
-		i=0
-		local prefix="/tmp/timemachine"
-		while [ -d "${prefix}-${i}" ] || [ -f "${prefix}-${i}" ]; do
-			i="$(( i + 1 ))"
-		done
-		tmp_dir="${prefix}-${i}"
-		mkdir -p "${tmp_dir}" >/dev/null
-	else
-		tmp_dir="$( mktemp -d )"
-	fi
-
-	printf "%s" "${tmp_dir}" | sed 's|/*$||'
+	# NOTE: MacOS does not have 'mktemp --suffix', so we're using our own version
+	i=0
+	local prefix="/tmp/timemachine"
+	while [ -d "${prefix}-${i}${suffix}" ] || [ -f "${prefix}-${i}${suffix}" ]; do
+		i="$(( i + 1 ))"
+	done
+	tmp_dir="$( printf "%q" "${prefix}-${i}${suffix}" )"
+	run "mkdir -p ${tmp_dir}" "1" "stderr" "stderr"
+	echo "${tmp_dir}"
 }

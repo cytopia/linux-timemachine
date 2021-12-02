@@ -3,7 +3,7 @@
 # -------------------------------------------------------------------------------------------------
 # Job Name
 # -------------------------------------------------------------------------------------------------
-name: MacOS
+name: MacOS-11
 
 
 # -------------------------------------------------------------------------------------------------
@@ -25,9 +25,9 @@ on:
 # What to run
 # -------------------------------------------------------------------------------------------------
 jobs:
-  macos:
+  macos-11:
 
-    runs-on: macos-latest
+    runs-on: macos-11
 
     strategy:
       fail-fast: false
@@ -44,6 +44,8 @@ jobs:
           - test-local-no_perms
           - test-local-no_times
           - test-local-copy_links
+          - test-local-crazy-filename-chars
+          - test-local-crazy-pathname-chars
 
     name: "[MacOS ${{ matrix.target }}]"
     steps:
