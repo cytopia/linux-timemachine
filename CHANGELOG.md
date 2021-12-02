@@ -6,7 +6,6 @@
 #### Changed
 - Switch to semver for versioning
 - Wrap rsync into eval to escape paths
-- Switch to bash interpreter for printf "%q"
 
 #### Added
 - CI: check for special chars in file names

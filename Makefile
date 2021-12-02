@@ -77,7 +77,7 @@ lint-shell:
 	@echo "# -------------------------------------------------------------------- #"
 	@echo "# Lint shellcheck                                                      #"
 	@echo "# -------------------------------------------------------------------- #"
-	@docker run --rm -v $(PWD):/mnt koalaman/shellcheck:stable --shell=bash timemachine
+	@docker run --rm -v $(PWD):/mnt koalaman/shellcheck:stable --shell=sh timemachine
 
 
 test: test-local-default-abs-noslash-noslash

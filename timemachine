@@ -1,6 +1,4 @@
-#!/bin/bash -eu
-
-set -o pipefail
+#!/bin/sh -eu
 #
 # https://serverfault.com/questions/834994/rsync-only-keep-10-backup-folders
 export PATH=/bin:/usr/bin
@@ -133,36 +131,16 @@ logerr() {
 # Backup Functions
 ################################################################################
 
-# https://stackoverflow.com/questions/1167746/how-to-assign-a-heredoc-value-to-a-variable-in-bash
-#define() {
-#	o=;
-#	while IFS="\n" read -r a; do
-#		o="$o$a"'
-#		';
-#	done;
-#	eval "$1=\$o";
-#}
-
 ###
 ### POSIX compliant path escape (like printf "%q" in bash)
 ###
 escape_path() {
-	# bash version
-	printf "%q" "${1}"
-	return
 	# POSIX version
 	# https://mullikine.github.io/posts/missing-posix-shell-functions-cmd-and-myeval/
 	for var in "${@}"; do
 		#printf "%s" "$(printf %s "${var}" | sed "s/'/'\\\\''/g")";
 		printf "'%s' " "$(printf %s "${var}" | sed "s/'/'\\\\''/g")";
 	done | sed 's/ $//'
-}
-
-###
-### Ensure to remove single quotes from start and end
-###
-unquote_path() {
-	echo "${1}" | sed "s/^'//g" | sed "s/'\$//g"
 }
 
 ###
@@ -238,27 +216,6 @@ link_exists() {
 		fi
 	fi
 }
-
-###
-### Remove local or remote file
-###
-#remove_file() {
-#	file="${1}"
-#
-#	logdebug "Removing file: ${1}"
-#	if is_remote "${file}"; then
-#		ssh_part="$( echo "${file}" | awk -F':' '{print $1}' )"
-#		file_part="$( echo "${file}" | awk -F':' '{print $2}' )"
-#		file_part="$( escape_path "${file_part}" )"
-#		ssh_cmd="rm ${file_part}"
-#		cmd="ssh ${SSH_ARGS} ${ssh_part} ${ssh_cmd}"
-#	else
-#		file="$( escape_path "${file}" )"
-#		cmd="rm ${file}"
-#	fi
-#	logdebug "\$ ${cmd}"
-#	eval "${cmd}" >/dev/null
-#}
 
 ###
 ### Rename local or remote directory
