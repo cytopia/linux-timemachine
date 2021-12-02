@@ -16,7 +16,7 @@ MY_PROJ="https://github.com/cytopia/linux-timemachine"
 MY_AUTH="cytopia"
 MY_MAIL="cytopia@everythingcli.org"
 MY_VERS="1.3.1"
-MY_DATE="2021-11-28"
+MY_DATE="2021-12-02"
 
 # Default command line arguments
 VERBOSE=
@@ -133,16 +133,28 @@ logerr() {
 # Backup Functions
 ################################################################################
 
+# https://stackoverflow.com/questions/1167746/how-to-assign-a-heredoc-value-to-a-variable-in-bash
+#define() {
+#	o=;
+#	while IFS="\n" read -r a; do
+#		o="$o$a"'
+#		';
+#	done;
+#	eval "$1=\$o";
+#}
+
 ###
 ### POSIX compliant path escape (like printf "%q" in bash)
 ###
 escape_path() {
+	# bash version
 	printf "%q" "${1}"
 	return
+	# POSIX version
 	# https://mullikine.github.io/posts/missing-posix-shell-functions-cmd-and-myeval/
-	for var in "$@"; do
-		#printf "%s" "$(printf %s "$var" | sed "s/'/'\\\\''/g")";
-		printf "'%s' " "$(printf %s "$var" | sed "s/'/'\\\\''/g")";
+	for var in "${@}"; do
+		#printf "%s" "$(printf %s "${var}" | sed "s/'/'\\\\''/g")";
+		printf "'%s' " "$(printf %s "${var}" | sed "s/'/'\\\\''/g")";
 	done | sed 's/ $//'
 }
 
@@ -173,18 +185,28 @@ is_remote() {
 dir_exists() {
 	directory="${1}"
 
-	logdebug "Checking if dir exists: ${1}"
 	if is_remote "${directory}"; then
 		ssh_part="$( echo "${directory}" | awk -F':' '{print $1}' )"
 		dir_part="$( echo "${directory}" | awk -F':' '{print $2}' )"
 		dir_part="$( escape_path "${dir_part}" )"
-		cmd="ssh ${SSH_ARGS} ${ssh_part} test -d ${dir_part}"
+		ssh_cmd="test -d ${dir_part}"
+		cmd="ssh ${SSH_ARGS} ${ssh_part} ${ssh_cmd}"
+		logdebug "Checking if remote dir exists: ${dir_part}"
+		logdebug "\$ ${cmd}"
+		if ! eval "${cmd}"; then
+			logerr "Remote directory does not exist: ${dir_part}"
+			return 1
+		fi
 	else
 		directory="$( escape_path "${directory}" )"
 		cmd="test -d ${directory}"
+		logdebug "Checking if local dir exists: ${directory}"
+		logdebug "\$ ${cmd}"
+		if ! eval "${cmd}" >/dev/null; then
+			logerr "Local directory does not exist: ${dir_part}"
+			return 1
+		fi
 	fi
-	logdebug "\$ ${cmd}"
-	eval "${cmd}" >/dev/null
 }
 
 ###
@@ -193,39 +215,50 @@ dir_exists() {
 link_exists() {
 	directory="${1}"
 
-	logdebug "Checking if link exists: ${1}"
 	if is_remote "${directory}"; then
 		ssh_part="$( echo "${directory}" | awk -F':' '{print $1}' )"
 		dir_part="$( echo "${directory}" | awk -F':' '{print $2}' )"
 		dir_part="$( escape_path "${dir_part}" )"
-		cmd="ssh ${SSH_ARGS} ${ssh_part} test -L ${dir_part}"
+		ssh_cmd="test -L ${dir_part}"
+		cmd="ssh ${SSH_ARGS} ${ssh_part} ${ssh_cmd}"
+		logdebug "Checking if remote symlink exists: ${dir_part}"
+		logdebug "\$ ${cmd}"
+		if ! eval "${cmd}" >/dev/null; then
+			logdebug "Remote symlink does not exist: ${dir_part}"
+			return 1
+		fi
 	else
 		directory="$( escape_path "${directory}" )"
 		cmd="test -L ${directory}"
+		logdebug "Checking if local symlink exists: ${directory}"
+		logdebug "\$ ${cmd}"
+		if ! eval "${cmd}" >/dev/null; then
+			logdebug "Local symlink does not exist: ${directory}"
+			return 1
+		fi
 	fi
-	logdebug "\$ ${cmd}"
-	eval "${cmd}" >/dev/null
 }
 
 ###
 ### Remove local or remote file
 ###
-remove_file() {
-	file="${1}"
-
-	logdebug "Removing file: ${1}"
-	if is_remote "${file}"; then
-		ssh_part="$( echo "${file}" | awk -F':' '{print $1}' )"
-		file_part="$( echo "${file}" | awk -F':' '{print $2}' )"
-		file_part="$( escape_path "${file_part}" )"
-		cmd="ssh ${SSH_ARGS} ${ssh_part} rm ${file_part}"
-	else
-		file="$( escape_path "${file}" )"
-		cmd="rm ${file}"
-	fi
-	logdebug "\$ ${cmd}"
-	eval "${cmd}" >/dev/null
-}
+#remove_file() {
+#	file="${1}"
+#
+#	logdebug "Removing file: ${1}"
+#	if is_remote "${file}"; then
+#		ssh_part="$( echo "${file}" | awk -F':' '{print $1}' )"
+#		file_part="$( echo "${file}" | awk -F':' '{print $2}' )"
+#		file_part="$( escape_path "${file_part}" )"
+#		ssh_cmd="rm ${file_part}"
+#		cmd="ssh ${SSH_ARGS} ${ssh_part} ${ssh_cmd}"
+#	else
+#		file="$( escape_path "${file}" )"
+#		cmd="rm ${file}"
+#	fi
+#	logdebug "\$ ${cmd}"
+#	eval "${cmd}" >/dev/null
+#}
 
 ###
 ### Rename local or remote directory
@@ -240,14 +273,25 @@ rename_directory() {
 		dir_to_part="$( echo "${to}" | awk -F':' '{print $2}' )"
 		dir_from_part="$( escape_path "${dir_from_part}" )"
 		dir_to_part="$( escape_path "${dir_to_part}" )"
-		cmd="ssh ${SSH_ARGS} ${ssh_part} mv ${dir_from_part} ${dir_to_part}"
+		ssh_cmd="mv ${dir_from_part} ${dir_to_part}"
+		cmd="ssh ${SSH_ARGS} ${ssh_part} ${ssh_cmd}"
+		logdebug "Renaming remote dir: ${dir_from_part} -> ${dir_to_part}"
+		logdebug "\$ ${cmd}"
+		if ! eval "${cmd}" >/dev/null; then
+			logerr "Failed to rename remote dir"
+			return 1
+		fi
 	else
 		from="$( escape_path "${from}" )"
 		to="$( escape_path "${to}" )"
 		cmd="mv ${from} ${to}"
+		logdebug "Renaming local dir: ${from} -> ${to}"
+		logdebug "\$ ${cmd}"
+		if ! eval "${cmd}" >/dev/null; then
+			logerr "Failed to rename local dir"
+			return 1
+		fi
 	fi
-	logdebug "\$ ${cmd}"
-	eval "${cmd}" >/dev/null
 }
 
 ###
@@ -262,14 +306,25 @@ link_directory() {
 		lnk_part="$( echo "${lnk}" | awk -F':' '{print $2}' )"
 		dir="$( escape_path "${dir}" )"
 		lnk_part="$( escape_path "${lnk_part}" )"
-		cmd="ssh ${SSH_ARGS} ${ssh_part} ln -s ${dir} ${lnk_part}"
+		ssh_cmd="ln -sfn ${dir} ${lnk_part}"
+		cmd="ssh ${SSH_ARGS} ${ssh_part} ${ssh_cmd}"
+		logdebug "Creating remote symlink: ${lnk}"
+		logdebug "\$ ${cmd}"
+		if ! eval "${cmd}" >/dev/null; then
+			logerr "Failed to created remote symlink: ${lnk}"
+			return 1
+		fi
 	else
 		dir="$( escape_path "${dir}" )"
 		lnk="$( escape_path "${lnk}" )"
-		cmd="ln -s ${dir} ${lnk}"
+		cmd="ln -sfn ${dir} ${lnk}"
+		logdebug "Creating local symlink: ${lnk}"
+		logdebug "\$ ${cmd}"
+		if ! eval "${cmd}" >/dev/null; then
+			logerr "Failed to created local symlink: ${lnk}"
+			return 1
+		fi
 	fi
-	logdebug "\$ ${cmd}"
-	eval "${cmd}" >/dev/null
 }
 
 
@@ -343,23 +398,27 @@ done
 ################################################################################
 
 if [ "${#}" -lt "2" ]; then
-	logerr "<source> and <destination> are required. See -h for help."
+	logerr "<source> and <destination> are required."
+	logerr "See -h for help."
 	exit 1
 fi
 
 if is_remote "${1}"; then
 	if is_remote "${2}"; then
 		logerr "Source and Target cannot both be remote locations."
+		logerr "See -h for help."
 		exit 1
 	fi
 fi
 
 if ! dir_exists "${1}"; then
-	logerr "Source directory does not exist: '${1}'. See -h for help."
+	logerr "Source directory does not exist: ${1}"
+	logerr "See -h for help."
 	exit 1
 fi
 if ! dir_exists "${2}"; then
-	logerr "Target directory does not exist: '${2}'. See -h for help."
+	logerr "Target directory does not exist: ${2}"
+	logerr "See -h for help."
 	exit 1
 fi
 
@@ -411,7 +470,7 @@ if link_exists "${DEST}/${BACKUP_LATEST}"; then
 	BTYPE="incremental"
 
 	logmsg "Starting incremental backup"
-	logmsg "\$ rsync $* ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
+	logmsg "\$ rsync $* $( escape_path "${SRC}" ) $( escape_path "${DEST}/${BACKUP_INPROGRESS}" )"
 
 	cmd="rsync \
 		-e \"ssh ${SSH_ARGS}\" \
@@ -427,13 +486,11 @@ if link_exists "${DEST}/${BACKUP_LATEST}"; then
 		--link-dest=../${BACKUP_LATEST} \
 		$* \
 		$( escape_path "${SRC}" ) $( escape_path "${DEST}/${BACKUP_INPROGRESS}" )"
-
-	eval "${cmd}"
 else
 	BTYPE="full"
 
 	logmsg "Starting full backup"
-	logmsg "\$ rsync $* ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
+	logmsg "\$ rsync $* $( escape_path "${SRC}" ) $( escape_path "${DEST}/${BACKUP_INPROGRESS}" )"
 
 	cmd="rsync \
 		-e \"ssh ${SSH_ARGS}\" \
@@ -448,33 +505,26 @@ else
 		--partial-dir=${RSYNC_PARTIAL} \
 		$* \
 		$( escape_path "${SRC}" ) $( escape_path "${DEST}/${BACKUP_INPROGRESS}" )"
+fi
 
-	eval "${cmd}"
+if ! eval "${cmd}"; then
+	logerr "${MY_NAME} Backup has failed"
+	exit 1
 fi
 
 
 ###
 ### 2/3 Finish atomic operation
 ###
-
 # Move temporary atomic directory to chosen dest directory
-logmsg "\$ mv ${DEST}/${BACKUP_INPROGRESS} ${DEST}/${BACKUP}"
 rename_directory "${DEST}/${BACKUP_INPROGRESS}" "${DEST}/${BACKUP}"
 
 
 ###
 ### 3/3 Latest symlink
 ###
-
-# Remove current 'latest' symlink
-if link_exists "${DEST}/${BACKUP_LATEST}"; then
-	logmsg "\$ rm ${DEST}/${BACKUP_LATEST}"
-	remove_file "${DEST}/${BACKUP_LATEST}"
-fi
-
-# Set new 'latest' link-dest for incremental backups
-logmsg "\$ ln -s ${BACKUP} ${DEST}/${BACKUP_LATEST}"
 link_directory "${BACKUP}" "${DEST}/${BACKUP_LATEST}"
+link_exists "${DEST}/${BACKUP_LATEST}"
 
 
 ###

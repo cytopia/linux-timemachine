@@ -104,7 +104,7 @@ test: test-remote-ssh_def_port-user
 test: test-remote-ssh_config-default
 test: test-remote-ssh_config-port_1111
 test: test-remote-ssh_config-port_overwrite
-test: test-remote-ssh_crazy-pathname-chars
+test: test-remote-ssh_crazy-source-pathname-chars
 
 test-local-default-abs-noslash-noslash:
 	./tests/01-run-local-default-abs-noslash-noslash.sh
@@ -178,8 +178,8 @@ test-remote-ssh_config-port_1111:
 test-remote-ssh_config-port_overwrite:
 	./tests/12-run-remote-ssh_config-port_overwrite.sh
 
-test-remote-ssh_crazy-pathname-chars:
-	./tests/13-run-remote-crazy-pathname-chars.sh
+test-remote-ssh_crazy-source-pathname-chars:
+	./tests/13-run-remote-crazy-source-pathname-chars.sh
 
 
 # -------------------------------------------------------------------------------------------------

@@ -121,16 +121,32 @@ run_remote_backup() {
 
 	out="$( create_tmp_file )"
 	err="$( create_tmp_file )"
+	exc="$( create_tmp_file )"
 
 	###
 	### Give 2 seconds time for a new unique directory name (second based) to be created
 	###
 	sleep 2
 
+	# Create execution file
+	{
+		printf "#!/bin/bash\\n";
+		printf "SRC='%s'\\n" "${src_dir}";
+		printf "DST='%s'\\n" "${dst_dir}";
+		printf "BIN=\"%s\"\\n" "${timemachine_path}";
+		printf "ARG=\"%s\"\\n" "${timemachine_args}";
+		printf "SSH=\"%s\"\\n" "${ssh_string}";
+		printf "RAR=\"%s\"\\n" "${rsync_args}";
+		printf "bash \${BIN} -d \${ARG} \"\${SRC}\" \${SSH}:\"\${DST}\" \${RAR}\\n";
+	} > "${exc}"
+	chmod +x "${exc}"
+	docker cp "${exc}" "${docker_client_name}:/run.sh"
+	#cat "${exc}"
 	###
 	### Run and check for failure
 	###
-	if ! run "docker exec ${docker_client_name} ${timemachine_path} -d ${timemachine_args} ${src_dir} ${ssh_string}:${dst_dir} ${rsync_args} > \"${out}\" 2> \"${err}\""; then
+	if ! run "docker exec ${docker_client_name} /run.sh > \"${out}\" 2> \"${err}\""; then
+	#if ! run "docker exec ${docker_client_name} ${timemachine_path} -d ${timemachine_args} ${src_dir} ${ssh_string}:${dst_dir} ${rsync_args} > \"${out}\" 2> \"${err}\""; then
 		printf "[TEST] [FAIL] Run failed.\\r\\n"
 		cat "${out}"
 		cat "${err}"

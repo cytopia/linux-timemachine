@@ -14,7 +14,8 @@
 
 [![Linting](https://github.com/cytopia/linux-timemachine/workflows/Linting/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=Linting)
 [![Linux](https://github.com/cytopia/linux-timemachine/workflows/Linux/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=Linux)
-[![MacOS](https://github.com/cytopia/linux-timemachine/workflows/MacOS/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=MacOS)
+[![MacOS 10](https://github.com/cytopia/linux-timemachine/workflows/MacOS-10/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=MacOS-10)
+[![MacOS 11](https://github.com/cytopia/linux-timemachine/workflows/MacOS-11/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=MacOS-11)
 [![SSH](https://github.com/cytopia/linux-timemachine/workflows/SSH/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=SSH)
 [![Tag](https://img.shields.io/github/tag/cytopia/linux-timemachine.svg)](https://github.com/cytopia/linux-timemachine/releases)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
@@ -198,7 +199,8 @@ Retention is a delicate topic as you want to be sure that data is removed as int
 
 [![Linting](https://github.com/cytopia/linux-timemachine/workflows/Linting/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=Linting)
 [![Linux](https://github.com/cytopia/linux-timemachine/workflows/Linux/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=Linux)
-[![MacOS](https://github.com/cytopia/linux-timemachine/workflows/MacOS/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=MacOS)
+[![MacOS 10](https://github.com/cytopia/linux-timemachine/workflows/MacOS-10/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=MacOS-10)
+[![MacOS 11](https://github.com/cytopia/linux-timemachine/workflows/MacOS-11/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=MacOS-11)
 [![SSH](https://github.com/cytopia/linux-timemachine/workflows/SSH/badge.svg)](https://github.com/cytopia/linux-timemachine/actions?workflow=SSH)
 
 The script is written and maintained with maximum care.

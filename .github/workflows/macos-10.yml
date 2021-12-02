@@ -3,7 +3,7 @@
 # -------------------------------------------------------------------------------------------------
 # Job Name
 # -------------------------------------------------------------------------------------------------
-name: SSH
+name: MacOS-10
 
 
 # -------------------------------------------------------------------------------------------------
@@ -25,28 +25,29 @@ on:
 # What to run
 # -------------------------------------------------------------------------------------------------
 jobs:
-  ssh:
+  macos-10:
 
-    runs-on: ubuntu-latest
+    runs-on: macos-10.15
 
     strategy:
       fail-fast: false
       matrix:
         target:
-          - test-remote-default-abs
-          - test-remote-default-rel
-          - test-remote-ssh_1111_port-nouser
-          - test-remote-ssh_1111_port-user
-          - test-remote-ssh_22_port-nouser
-          - test-remote-ssh_22_port-user
-          - test-remote-ssh_def_port-nouser
-          - test-remote-ssh_def_port-user
-          - test-remote-ssh_config-default
-          - test-remote-ssh_config-port_1111
-          - test-remote-ssh_config-port_overwrite
-          - test-remote-ssh_crazy-source-pathname-chars
+          - test-local-default-abs-noslash-noslash
+          - test-local-default-abs-noslash-slash
+          - test-local-default-abs-slash-noslash
+          - test-local-default-abs-slash-slash
+          - test-local-default-rel-noslash-noslash
+          - test-local-default-rel-noslash-slash
+          - test-local-default-rel-slash-noslash
+          - test-local-default-rel-slash-slash
+          - test-local-no_perms
+          - test-local-no_times
+          - test-local-copy_links
+          - test-local-crazy-filename-chars
+          - test-local-crazy-pathname-chars
 
-    name: "[SSH ${{ matrix.target }}]"
+    name: "[MacOS ${{ matrix.target }}]"
     steps:
 
       # ------------------------------------------------------------
@@ -70,20 +71,19 @@ jobs:
         run: |
           bash --version
 
-      - name: Show docker versions
+      - name: Show rsync versions
         shell: bash
         run: |
-          docker --version
+          rsync --version
 
       # ------------------------------------------------------------
-      # Build
+      # Install
       # ------------------------------------------------------------
-      - name: Build
+      - name: Install
         shell: bash
         run: |
-          while ! make pull-docker-ssh-base; do sleep 1; done
-          while ! make build-docker-ssh-server; do sleep 1; done
-          while ! make build-docker-ssh-client; do sleep 1; done
+          sudo make install
+          /usr/local/bin/timemachine --version
 
       # ------------------------------------------------------------
       # Test
@@ -94,3 +94,12 @@ jobs:
           make ${TARGET}
         env:
           TARGET: ${{ matrix.target }}
+
+      # ------------------------------------------------------------
+      # Uninstall
+      # ------------------------------------------------------------
+      - name: Uninstall
+        shell: bash
+        run: |
+          sudo make uninstall
+          if test -f /usr/local/bin/timemachine >/dev/null 2>&1; then false; fi
