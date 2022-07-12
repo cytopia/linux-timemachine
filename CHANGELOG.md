@@ -1,6 +1,12 @@
 # Changelog
 
 
+## Release v1.3.2
+
+#### Fixed
+- Fixed #77 Missing variable when local directory is missing
+
+
 ## Release v1.3.1
 
 #### Changed
