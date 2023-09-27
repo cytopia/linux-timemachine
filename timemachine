@@ -439,6 +439,7 @@ if link_exists "${DEST}/${BACKUP_LATEST}"; then
 		--links \
 		--delete \
 		--delete-excluded \
+		--filter='dir-merge /.rsync-filter' \
 		--partial-dir=${RSYNC_PARTIAL} \
 		--link-dest=../${BACKUP_LATEST} \
 		$* \
@@ -460,6 +461,7 @@ else
 		--delete \
 		--delete-excluded \
 		--partial-dir=${RSYNC_PARTIAL} \
+		--filter='dir-merge /.rsync-filter' \
 		$* \
 		$( escape_path "${SRC}" ) $( escape_path "${DEST}/${BACKUP_INPROGRESS}" )"
 fi
