@@ -427,10 +427,10 @@ if link_exists "${DEST}/${BACKUP_LATEST}"; then
 	BTYPE="incremental"
 
 	logmsg "Starting incremental backup"
-	logmsg "\$ rsync $* $( escape_path "${SRC}" ) $( escape_path "${DEST}/${BACKUP_INPROGRESS}" )"
+	logmsg "\$ rsync $* ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
 
-	cmd="rsync \
-		-e \"ssh ${SSH_ARGS}\" \
+	set -- rsync \
+		-e "ssh ${SSH_ARGS}" \
 		--recursive \
 		--perms \
 		--owner \
@@ -441,16 +441,16 @@ if link_exists "${DEST}/${BACKUP_LATEST}"; then
 		--delete-excluded \
 		--partial-dir=${RSYNC_PARTIAL} \
 		--link-dest=../${BACKUP_LATEST} \
-		$* \
-		$( escape_path "${SRC}" ) $( escape_path "${DEST}/${BACKUP_INPROGRESS}" )"
+		"$@" \
+		"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
 else
 	BTYPE="full"
 
 	logmsg "Starting full backup"
-	logmsg "\$ rsync $* $( escape_path "${SRC}" ) $( escape_path "${DEST}/${BACKUP_INPROGRESS}" )"
+	logmsg "\$ rsync $* ${SRC} ${DEST}/${BACKUP_INPROGRESS}"
 
-	cmd="rsync \
-		-e \"ssh ${SSH_ARGS}\" \
+	set -- rsync \
+		-e "ssh ${SSH_ARGS}" \
 		--recursive \
 		--perms \
 		--owner \
@@ -460,11 +460,11 @@ else
 		--delete \
 		--delete-excluded \
 		--partial-dir=${RSYNC_PARTIAL} \
-		$* \
-		$( escape_path "${SRC}" ) $( escape_path "${DEST}/${BACKUP_INPROGRESS}" )"
+		"$@" \
+		"${SRC}" "${DEST}/${BACKUP_INPROGRESS}"
 fi
 
-if ! eval "${cmd}"; then
+if ! "$@"; then
 	logerr "${MY_NAME} Backup has failed"
 	exit 1
 fi
